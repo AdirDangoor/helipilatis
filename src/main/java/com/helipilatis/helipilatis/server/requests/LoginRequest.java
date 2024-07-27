@@ -1,4 +1,4 @@
-package com.helipilatis.helipilatis.server.login_and_register;
+package com.helipilatis.helipilatis.server.requests;
 
 public class LoginRequest {
     private String username;

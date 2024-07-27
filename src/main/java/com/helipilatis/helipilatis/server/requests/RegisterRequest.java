@@ -1,20 +1,18 @@
-package com.helipilatis.helipilatis.server.login_and_register;
+package com.helipilatis.helipilatis.server.requests;
 
 public class RegisterRequest {
     private String username;
     private String email;
     private String password;
-    private String confirmPassword;
 
     // Constructors
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String username, String email, String password, String confirmPassword) {
+    public RegisterRequest(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.confirmPassword = confirmPassword;
     }
 
     // Getters and Setters
@@ -42,13 +40,6 @@ public class RegisterRequest {
         this.password = password;
     }
 
-    public String getConfirmPassword() {
-        return confirmPassword;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
-    }
 
     // toString method
     @Override
@@ -57,7 +48,6 @@ public class RegisterRequest {
                 "username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", confirmPassword='" + confirmPassword + '\'' +
                 '}';
     }
 }
