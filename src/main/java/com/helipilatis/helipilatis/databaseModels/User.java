@@ -14,6 +14,10 @@ public class User {
     private String username;
     private String email;
     private String password;
+    //need tickets status
+    //need age
+    //need gender
+    //need inbox object
 
     public User(String username, String email, String password) {
         this.username = username;
