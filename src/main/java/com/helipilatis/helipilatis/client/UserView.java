@@ -7,6 +7,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +22,22 @@ public class UserView extends VerticalLayout {
 
         // Create the schedule grid
         Grid<ScheduleItem> scheduleGrid = createScheduleGrid();
+        Button ShopButton = new Button("Shop", event -> getUI().ifPresent(ui -> ui.navigate("shop")));
 
-        // Add components to the layout
-        add(topBar, scheduleGrid);
+        // Create a layout for the top section
+        HorizontalLayout topSection = new HorizontalLayout();
+        topSection.setWidthFull();
+        topSection.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        topSection.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        // Add the topBar and shopButton to the topSection
+        topSection.add(topBar, ShopButton);
+
+        // Create a vertical layout and add components to it
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.add(topSection, scheduleGrid);
+        add(mainLayout);
+
     }
 
     private HorizontalLayout createTopBar() {
