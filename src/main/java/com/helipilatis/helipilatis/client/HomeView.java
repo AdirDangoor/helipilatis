@@ -9,6 +9,9 @@ import com.vaadin.flow.router.Route;
 public class HomeView extends VerticalLayout {
 
     public HomeView() {
+        // Center the content
+        setAlignItems(Alignment.CENTER);
+        setJustifyContentMode(JustifyContentMode.CENTER);
         // Title
         add(new H1("Welcome to your new application"));
 
