@@ -6,6 +6,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 src/main/resources/application.properties
+spring.jpa.hibernate.ddl-auto=update
 
 ### STS ###
 .apt_generated

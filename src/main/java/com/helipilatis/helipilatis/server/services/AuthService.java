@@ -22,6 +22,7 @@ public class AuthService {
 
     public boolean register(RegisterRequest registerRequest) {
         User user = new User(registerRequest.getUsername(), registerRequest.getEmail(), registerRequest.getPassword());
+        //User user = new User(registerRequest.getUsername(), registerRequest.getEmail(), registerRequest.getPassword(), "active", registerRequest.getAge(), registerRequest.getGender(), 0);
         userRepository.save(user);
         return true;
     }

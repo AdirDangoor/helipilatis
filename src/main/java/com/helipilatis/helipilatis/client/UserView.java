@@ -17,6 +17,17 @@ import java.util.List;
 public class UserView extends VerticalLayout {
 
     public UserView() {
+        setSizeFull();
+        setAlignItems(Alignment.CENTER);
+        setJustifyContentMode(JustifyContentMode.CENTER);
+
+        // Set background image
+        String imagePath = "images/shop_background.jpg"; // Replace with your image path
+        getElement().getStyle()
+                .set("background-image", "url('" + imagePath + "')")
+                .set("background-size", "cover")
+                .set("background-position", "center");
+
         // Create the top bar with the date and time
         HorizontalLayout topBar = createTopBar();
 
