@@ -4,14 +4,18 @@ import com.helipilatis.helipilatis.databaseModels.PilatisClass;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.html.Image;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -29,21 +33,48 @@ public class UserView extends VerticalLayout {
     @Autowired
     private HttpSession session;
 
+    @Autowired
+    public UserView(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+        setSizeFull(); // Ensure the UserView takes up the full size
+        setAlignItems(Alignment.STRETCH); // Stretch items to take full width
+        setJustifyContentMode(JustifyContentMode.START); // Align content to the start
+
+        // Set background image
+        String imagePath = "images/shop_background.jpg"; // Replace with your image path
+        getElement().getStyle()
+                .set("background-image", "url('" + imagePath + "')")
+                .set("background-size", "cover")
+                .set("background-position", "center");
+
+        // Create the top top bar with the logo and shop button
+        HorizontalLayout topTopBar = createTopTopBar();
+
+        // Create the top bar with the date and time
+        HorizontalLayout topBar = createTopBar();
+
+        // Set the max width and center the layout
+        setMaxWidth("100%"); // Set max width to 100% to take full width
+        setDefaultHorizontalComponentAlignment(Alignment.STRETCH); // Stretch components horizontally
+
+        // Create a vertical layout and add components to it
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.setWidthFull(); // Ensure the main layout takes full width
+
+        // Add the topTopBar and topBar to the main layout
+        mainLayout.add(topTopBar, topBar);
+
+        // Fetch and display the schedule
+        displaySchedule(mainLayout);
+
+        add(mainLayout);
+    }
+
     private Long getCurrentUserId() {
         return (Long) session.getAttribute("userId");
     }
 
-    @Autowired
-    public UserView(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        // Set the max width and center the layout
-        setMaxWidth("1200px");
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        // Fetch and display the schedule
-        displaySchedule();
-    }
-
-    private void displaySchedule() {
+    private void displaySchedule(VerticalLayout mainLayout) {
         List<PilatisClass> pilatisClasses = fetchPilatisClasses();
         Map<LocalDate, List<PilatisClass>> groupedByDate = groupByDate(pilatisClasses);
 
@@ -59,6 +90,7 @@ public class UserView extends VerticalLayout {
         VerticalLayout classesContainer = new VerticalLayout();
         classesContainer.setPadding(true);
         classesContainer.setSpacing(true);
+        classesContainer.setWidthFull(); // Ensure the container takes full width
 
         sortedDates.forEach(date -> {
             List<PilatisClass> items = groupedByDate.get(date);
@@ -83,8 +115,8 @@ public class UserView extends VerticalLayout {
             classesContainer.add(dayClasses);
         });
 
-        // Add the date tabs and classes container to the layout
-        add(dateTabs, classesContainer);
+        // Add the date tabs and classes container to the main layout
+        mainLayout.add(dateTabs, classesContainer);
     }
 
     private List<PilatisClass> fetchPilatisClasses() {
@@ -104,6 +136,7 @@ public class UserView extends VerticalLayout {
         VerticalLayout dayClasses = new VerticalLayout();
         dayClasses.setPadding(true);
         dayClasses.setSpacing(true);
+        dayClasses.setWidthFull(); // Ensure the day classes layout takes full width
 
         Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
         grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
@@ -130,10 +163,11 @@ public class UserView extends VerticalLayout {
                             Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
                             return;
                         }
-                        String url = "http://localhost:8080/api/calendar/classes/" + pilatisClass.getId() + "/signup?userId=" + userId;
-                        logger.info("Sending request to URL: " + url);
-                        ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
-                        logger.info("Response status code: " + response.getStatusCode());
+                        ResponseEntity<String> response = restTemplate.postForEntity(
+                                "http://localhost:8080/api/calendar/classes/" + pilatisClass.getId() + "/signup?userId=" + userId,
+                                null,
+                                String.class
+                        );
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully booked", 3000, Notification.Position.MIDDLE);
                         } else if (response.getStatusCode().is4xxClientError()) {
@@ -156,4 +190,25 @@ public class UserView extends VerticalLayout {
         return button;
     }
 
+    private HorizontalLayout createTopTopBar() {
+        HorizontalLayout topTopBar = new HorizontalLayout();
+        topTopBar.setWidthFull();
+        topTopBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        topTopBar.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        // Add logo
+        Image logo = new Image("images/logo.png", "Logo"); // Replace with your logo path
+        logo.setHeight("50px");
+
+        // Add shop button
+        Button shopButton = new Button("Shop", event -> getUI().ifPresent(ui -> ui.navigate("shop")));
+
+        topTopBar.add(logo, shopButton);
+        return topTopBar;
+    }
+
+    private HorizontalLayout createTopBar() {
+        // Implementation of createTopBar method
+        return new HorizontalLayout();
+    }
 }

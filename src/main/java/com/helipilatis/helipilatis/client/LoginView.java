@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.html.Div;
 
 @Route("login")
 public class LoginView extends VerticalLayout {
@@ -22,14 +24,41 @@ public class LoginView extends VerticalLayout {
     private ApiRequests apiRequests;
 
     public LoginView() {
+        // Set the VerticalLayout to full size and center its content
+        setSizeFull();
+        setJustifyContentMode(JustifyContentMode.CENTER);
+        setAlignItems(Alignment.CENTER);
+
+        // Set background image
+        String imagePath = "images/shop_background.jpg"; // Replace with your image path
+        getElement().getStyle()
+                .set("background-image", "url('" + imagePath + "')")
+                .set("background-size", "cover")
+                .set("background-position", "center");
+        // Create a container for the login form
+        Div loginForm = new Div();
+        loginForm.getStyle().set("width", "300px")
+                .set("padding", "20px")
+                .set("border", "1px solid #ccc")
+                .set("border-radius", "5px")
+                .set("background-color", "white");
+
         // Title
-        add(new H1("Login"));
+        H1 title = new H1("Login");
+        title.getStyle().set("text-align", "center");
 
-        // Login form
-        TextField phone = new TextField("Phone");
+        // Login form elements
+        TextField phone = new TextField("Phone Number");
+        phone.setWidthFull();
+
         Button loginButton = new Button("Login");
+        loginButton.setWidthFull();
 
-        add(phone, loginButton);
+        // Add components to the login form container
+        loginForm.add(title, phone, loginButton);
+
+        // Add the login form container to the main layout
+        add(loginForm);
 
         loginButton.addClickListener(event -> {
             LoginRequest loginRequest = new LoginRequest();

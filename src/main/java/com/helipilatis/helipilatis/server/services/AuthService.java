@@ -45,7 +45,7 @@ public class AuthService {
             throw new RegistrationException("Phone number already exists");
         }
 
-        User user = new User(registerRequest.getName(), phone);
+        User user = new User(phone, registerRequest.getName(), registerRequest.getAge(), registerRequest.getGender());
         userRepository.save(user);
     }
 

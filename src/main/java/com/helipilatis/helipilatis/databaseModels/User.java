@@ -10,17 +10,29 @@ public class User {
     @SequenceGenerator(name = "user_seq", sequenceName = "USER_SEQ", allocationSize = 1)
     private Long id;
 
-    private String name;
     private String phone;
+    private String name;
+    private int age;
+    private String gender;
+    private int tickets; //mention the number of tickets client owns
 
-    // Default constructor
+    // Default constructor for JPA
     public User() {
     }
 
-    // Parameterized constructor
-    public User(String name, String phone) {
-        this.name = name;
+    public User(String phone, String name, int age, String gender, int tickets) {
         this.phone = phone;
+        this.name = name;
+        this.age = age;
+        this.gender = gender;
+        this.tickets = tickets;
+    }
+
+    public User(String phone, String name, int age, String gender) {
+        this.phone = phone;
+        this.name = name;
+        this.age = age;
+        this.gender = gender;
     }
 
     // Getters and setters
@@ -32,6 +44,14 @@ public class User {
         this.id = id;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     public String getName() {
         return name;
     }
@@ -40,11 +60,27 @@ public class User {
         this.name = name;
     }
 
-    public String getPhone() {
-        return phone;
+    public int getAge() {
+        return age;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public int getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(int tickets) {
+        this.tickets = tickets;
     }
 }

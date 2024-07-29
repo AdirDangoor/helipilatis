@@ -24,11 +24,15 @@ public class DatabaseInitializer {
         try (Connection connection = dataSource.getConnection();
              Statement statement = connection.createStatement()) {
 
+
             // Create users table if it does not exist
             statement.execute("CREATE TABLE IF NOT EXISTS users (" +
                     "id BIGINT PRIMARY KEY, " +
+                    "phone VARCHAR(255) NOT NULL, " +
                     "name VARCHAR(255) NOT NULL, " +
-                    "phone VARCHAR(255) NOT NULL)");
+                    "age INT NOT NULL, " +
+                    "gender VARCHAR(50) NOT NULL, " +
+                    "tickets INT NOT NULL)");
 
             // Create USER_SEQ sequence if it does not exist
             statement.execute("CREATE SEQUENCE IF NOT EXISTS USER_SEQ START WITH 1 INCREMENT BY 1");
