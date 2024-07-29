@@ -5,7 +5,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,30 +18,32 @@ public class LoginView extends VerticalLayout {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private ApiRequests apiRequests;
+
     public LoginView() {
         // Title
         add(new H1("Login"));
 
         // Login form
-        TextField username = new TextField("Username");
-        PasswordField password = new PasswordField("Password");
+        TextField phone = new TextField("Phone");
         Button loginButton = new Button("Login");
 
-        add(username, password, loginButton);
+        add(phone, loginButton);
 
         loginButton.addClickListener(event -> {
             LoginRequest loginRequest = new LoginRequest();
-            loginRequest.setUsername(username.getValue());
-            loginRequest.setPassword(password.getValue());
+            loginRequest.setPhone(phone.getValue());
 
-            String url = "http://localhost:8080/api/auth/login";
-            ResponseEntity<String> response = restTemplate.postForEntity(url, loginRequest, String.class);
-
+            ResponseEntity<String> response = apiRequests.login(loginRequest);
             if (response.getStatusCode() == HttpStatus.OK) {
+                // Store userId in local storage
+                String userId = response.getBody();
+                getUI().ifPresent(ui -> ui.getPage().executeJs("localStorage.setItem('userId', $0);", userId));
                 Notification.show("User authenticated successfully");
                 getUI().ifPresent(ui -> ui.navigate("user"));
             } else {
-                Notification.show("Authentication failed", 3000, Notification.Position.MIDDLE);
+                Notification.show("Authentication failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
             }
         });
     }

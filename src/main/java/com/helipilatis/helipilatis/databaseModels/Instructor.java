@@ -3,27 +3,23 @@ package com.helipilatis.helipilatis.databaseModels;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "instructors") // Ensure the table name matches the actual table name in the database
+public class Instructor {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", sequenceName = "USER_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "instructor_seq")
+    @SequenceGenerator(name = "instructor_seq", sequenceName = "INSTRUCTOR_SEQ", allocationSize = 1)
     private Long id;
-
     private String name;
     private String phone;
 
-    // Default constructor
-    public User() {
+    public Instructor() {
     }
 
-    // Parameterized constructor
-    public User(String name, String phone) {
+    public Instructor(String name, String phone) {
         this.name = name;
         this.phone = phone;
     }
 
-    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -46,5 +42,14 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    @Override
+    public String toString() {
+        return "Instructor{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", phone='" + phone + '\'' +
+                '}';
     }
 }

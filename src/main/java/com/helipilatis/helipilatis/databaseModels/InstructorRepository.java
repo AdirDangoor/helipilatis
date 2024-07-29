@@ -3,6 +3,6 @@ package com.helipilatis.helipilatis.databaseModels;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByPhone(String phone);
+public interface InstructorRepository extends JpaRepository<Instructor, Long> {
+    Optional<Instructor> findByPhone(String phone);
 }
