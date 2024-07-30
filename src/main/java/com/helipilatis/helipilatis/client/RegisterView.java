@@ -15,15 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 @Route("register")
-public class RegisterView extends VerticalLayout {
+public class RegisterView extends BaseView {
 
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
-    private ApiRequests apiRequests;
 
     public RegisterView() {
+        super();
+
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
@@ -79,10 +76,14 @@ public class RegisterView extends VerticalLayout {
                 registerRequest.setPhone(phoneValue);
                 registerRequest.setName(nameValue);
                 registerRequest.setGender(genderValue);
-                String url = "http://localhost:8080/api/auth/register";
-                ResponseEntity<String> response = restTemplate.postForEntity(url, registerRequest, String.class);
+
+
+                ResponseEntity<String> response = apiRequests.register(registerRequest);
 
                 if (response.getStatusCode() == HttpStatus.OK) {
+                    String userId = response.getBody();
+                    logger.info("userId: " + userId);
+                    getUI().ifPresent(ui -> ui.getPage().executeJs("localStorage.setItem('userId', $0);", userId));
                     Notification.show("User registered successfully");
                     getUI().ifPresent(ui -> ui.navigate("user"));
                 } else {

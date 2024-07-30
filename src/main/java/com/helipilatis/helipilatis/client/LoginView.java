@@ -13,17 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Div;
-
+import java.util.logging.Logger;
 @Route("login")
-public class LoginView extends VerticalLayout {
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
-    private ApiRequests apiRequests;
+public class LoginView extends BaseView {
 
     public LoginView() {
+        super();
         // Set the VerticalLayout to full size and center its content
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
@@ -68,6 +63,7 @@ public class LoginView extends VerticalLayout {
             if (response.getStatusCode() == HttpStatus.OK) {
                 // Store userId in local storage
                 String userId = response.getBody();
+                logger.info("userId: " + userId);
                 getUI().ifPresent(ui -> ui.getPage().executeJs("localStorage.setItem('userId', $0);", userId));
                 Notification.show("User authenticated successfully");
                 getUI().ifPresent(ui -> ui.navigate("user"));

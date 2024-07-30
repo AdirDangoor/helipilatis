@@ -26,7 +26,7 @@ public class AuthController {
             Long userId = authService.login(loginRequest);
             session.setAttribute("userId", userId); // Set userId in session
             logger.info("Login successful, userId: " + userId);
-            return ResponseEntity.ok("Login successful, userId: " + userId);
+            return ResponseEntity.ok(String.valueOf(userId));
         } catch (ServerExceptions.LoginException e) {
             logger.info("Login failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Login failed: " + e.getMessage());
@@ -37,9 +37,9 @@ public class AuthController {
     public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
         logger.info("registerRequest : " + registerRequest);
         try {
-            authService.register(registerRequest);
+            Long userId = authService.register(registerRequest);
             logger.info("Register successful");
-            return ResponseEntity.ok("Register successful");
+            return ResponseEntity.ok(String.valueOf(userId));
         } catch (ServerExceptions.RegistrationException e) {
             logger.info("Register failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Register failed: " + e.getMessage());

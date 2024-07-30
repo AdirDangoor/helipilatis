@@ -25,16 +25,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Route("user")
-public class UserView extends VerticalLayout {
+public class UserView extends BaseView {
 
-    private static final Logger logger = Logger.getLogger(UserView.class.getName());
-    private final RestTemplate restTemplate;
+
 
     @Autowired
     private HttpSession session;
 
     @Autowired
     public UserView(RestTemplate restTemplate) {
+        super();
+
         this.restTemplate = restTemplate;
         setSizeFull(); // Ensure the UserView takes up the full size
         setAlignItems(Alignment.STRETCH); // Stretch items to take full width
@@ -163,11 +164,9 @@ public class UserView extends VerticalLayout {
                             Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
                             return;
                         }
-                        ResponseEntity<String> response = restTemplate.postForEntity(
-                                "http://localhost:8080/api/calendar/classes/" + pilatisClass.getId() + "/signup?userId=" + userId,
-                                null,
-                                String.class
-                        );
+
+                        ResponseEntity<String> response = apiRequests.bookClass(pilatisClass.getId(), Long.parseLong(userId));
+
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully booked", 3000, Notification.Position.MIDDLE);
                         } else if (response.getStatusCode().is4xxClientError()) {

@@ -38,7 +38,8 @@ public class AuthService {
         throw new LoginException("Phone number does not exist");
     }
 
-    public void register(RegisterRequest registerRequest) throws RegistrationException {
+
+    public Long register(RegisterRequest registerRequest) throws RegistrationException {
         String phone = registerRequest.getPhone();
 
         if (phoneExistsInUsers(phone) || phoneExistsInInstructors(phone)) {
@@ -47,6 +48,7 @@ public class AuthService {
 
         User user = new User(phone, registerRequest.getName(), registerRequest.getAge(), registerRequest.getGender());
         userRepository.save(user);
+        return user.getId();
     }
 
     private boolean phoneExistsInUsers(String phone) {
