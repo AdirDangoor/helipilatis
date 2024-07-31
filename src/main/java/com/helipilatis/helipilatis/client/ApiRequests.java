@@ -41,4 +41,13 @@ public class ApiRequests {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
         }
     }
+
+    public ResponseEntity<String> cancelClass(Long classId, Long userId) {
+        String url = "http://localhost:8080/api/calendar/classes/" + classId + "/cancel?userId=" + userId;
+        try {
+            return restTemplate.postForEntity(url, null, String.class);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
+    }
 }

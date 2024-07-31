@@ -4,6 +4,7 @@ import com.helipilatis.helipilatis.client.UserView;
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
 import com.helipilatis.helipilatis.server.services.CalendarService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.helipilatis.helipilatis.config.LoggingUtil;
@@ -50,6 +51,16 @@ public class CalendarController {
             return ResponseEntity.status(409).body("Class is full");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error booking class");
+        }
+    }
+
+    @PostMapping("/classes/{classId}/cancel")
+    public ResponseEntity<String> cancelClass(@PathVariable Long classId, @RequestParam Long userId) {
+        try {
+            calendarService.cancelClass(classId, userId);
+            return ResponseEntity.ok("Class cancelled successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error cancelling class: " + e.getMessage());
         }
     }
 

@@ -125,6 +125,17 @@ public class CalendarService {
         }
     }
 
+
+    public void cancelClass(Long classId, Long userId) {
+        PilatisClass pilatisClass = calendarRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        pilatisClass.getSignedUsers().remove(user);
+        calendarRepository.save(pilatisClass);
+    }
+
     public void sendMessageToClassClients(Long classId, String message) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));

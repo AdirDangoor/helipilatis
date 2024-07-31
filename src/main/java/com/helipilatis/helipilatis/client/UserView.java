@@ -1,6 +1,7 @@
 package com.helipilatis.helipilatis.client;
 
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,7 +51,7 @@ public class UserView extends BaseView {
                 .set("background-position", "center");
 
         // Create the top top bar with the logo and shop button
-        HorizontalLayout topTopBar = createTopTopBar();
+        HorizontalLayout topFooter = createTopFooter();
 
         // Create the top bar with the date and time
         HorizontalLayout topBar = createTopBar();
@@ -63,7 +65,7 @@ public class UserView extends BaseView {
         mainLayout.setWidthFull(); // Ensure the main layout takes full width
 
         // Add the topTopBar and topBar to the main layout
-        mainLayout.add(topTopBar, topBar);
+        mainLayout.add(topFooter, topBar);
 
         // Fetch and display the schedule
         displaySchedule(mainLayout);
@@ -71,9 +73,35 @@ public class UserView extends BaseView {
         add(mainLayout);
     }
 
-    private Long getCurrentUserId() {
-        return (Long) session.getAttribute("userId");
+    private void getCurrentUserId(Consumer<Long> callback) {
+        getUI().ifPresent(ui -> ui.getPage().executeJs(
+                "return localStorage.getItem('userId');"
+        ).then(String.class, userIdStr -> {
+            Long userId = userIdStr != null ? Long.parseLong(userIdStr) : null;
+            logger.info("userId: " + userId);
+            callback.accept(userId);
+        }));
     }
+
+    private List<PilatisClass> fetchPilatisClasses() {
+        String url = "http://localhost:8080/api/calendar/classes"; // Replace with your actual API endpoint
+
+        ResponseEntity<PilatisClass[]> response = restTemplate.getForEntity(url, PilatisClass[].class);
+        // Print response
+        logger.info("fetchPilatisClasses API response : " + Arrays.toString(response.getBody()));
+        return List.of(response.getBody());
+    }
+
+    private Map<LocalDate, List<PilatisClass>> groupByDate(List<PilatisClass> pilatisClasses) {
+        return pilatisClasses.stream().collect(Collectors.groupingBy(PilatisClass::getDate));
+    }
+
+
+
+
+
+
+
 
     private void displaySchedule(VerticalLayout mainLayout) {
         List<PilatisClass> pilatisClasses = fetchPilatisClasses();
@@ -120,19 +148,6 @@ public class UserView extends BaseView {
         mainLayout.add(dateTabs, classesContainer);
     }
 
-    private List<PilatisClass> fetchPilatisClasses() {
-        String url = "http://localhost:8080/api/calendar/classes"; // Replace with your actual API endpoint
-
-        ResponseEntity<PilatisClass[]> response = restTemplate.getForEntity(url, PilatisClass[].class);
-        // Print response
-        logger.info("fetchPilatisClasses API response : " + Arrays.toString(response.getBody()));
-        return List.of(response.getBody());
-    }
-
-    private Map<LocalDate, List<PilatisClass>> groupByDate(List<PilatisClass> pilatisClasses) {
-        return pilatisClasses.stream().collect(Collectors.groupingBy(PilatisClass::getDate));
-    }
-
     private VerticalLayout createDayClasses(List<PilatisClass> items) {
         VerticalLayout dayClasses = new VerticalLayout();
         dayClasses.setPadding(true);
@@ -152,35 +167,53 @@ public class UserView extends BaseView {
     }
 
     private Button createBookButton(PilatisClass pilatisClass) {
-        Button button = new Button("BOOK VIRTUAL");
-        if (pilatisClass.getSignedUsers().size() >= pilatisClass.getMaxParticipants()) {
-            button.setVisible(false);
-        } else {
-            button.addClickListener(e -> {
-                try {
-                    // Retrieve userId from local storage
-                    getUI().ifPresent(ui -> ui.getPage().executeJs("return localStorage.getItem('userId');").then(String.class, userId -> {
-                        if (userId == null) {
-                            Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
-                            return;
-                        }
+        Button button = new Button();
+        getCurrentUserId(userId -> {
+            if (userId == null) {
+                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+                return;
+            }
 
-                        ResponseEntity<String> response = apiRequests.bookClass(pilatisClass.getId(), Long.parseLong(userId));
+            boolean isBooked = pilatisClass.getSignedUsers().stream()
+                    .anyMatch(user -> user.getId().equals(userId));
+
+            if (isBooked) {
+                button.setText("CANCEL");
+                button.addClickListener(e -> {
+                    try {
+                        ResponseEntity<String> response = apiRequests.cancelClass(pilatisClass.getId(), userId);
+
+                        if (response.getStatusCode().is2xxSuccessful()) {
+                            Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
+                            UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
+                        } else {
+                            Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
+                        }
+                    } catch (Exception ex) {
+                        logger.severe("Error cancelling class: " + ex.getMessage());
+                        Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
+                    }
+                });
+            } else {
+                button.setText("BOOK VIRTUAL");
+                button.addClickListener(e -> {
+                    try {
+                        ResponseEntity<String> response = apiRequests.bookClass(pilatisClass.getId(), userId);
 
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully booked", 3000, Notification.Position.MIDDLE);
-                        } else if (response.getStatusCode().is4xxClientError()) {
-                            Notification.show("Class is full", 3000, Notification.Position.MIDDLE);
+                            UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
                         } else {
                             Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
                         }
-                    }));
-                } catch (Exception ex) {
-                    logger.severe("Error booking class: " + ex.getMessage());
-                    Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
-                }
-            });
-        }
+                    } catch (Exception ex) {
+                        logger.severe("Error booking class: " + ex.getMessage());
+                        Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
+                    }
+                });
+            }
+        });
+
         button.getStyle()
                 .set("background-color", "#007BFF")
                 .set("color", "white")
@@ -189,11 +222,11 @@ public class UserView extends BaseView {
         return button;
     }
 
-    private HorizontalLayout createTopTopBar() {
-        HorizontalLayout topTopBar = new HorizontalLayout();
-        topTopBar.setWidthFull();
-        topTopBar.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        topTopBar.setAlignItems(FlexComponent.Alignment.CENTER);
+    private HorizontalLayout createTopFooter() {
+        HorizontalLayout topFooter = new HorizontalLayout();
+        topFooter.setWidthFull();
+        topFooter.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        topFooter.setAlignItems(FlexComponent.Alignment.CENTER);
 
         // Add logo
         Image logo = new Image("images/logo.png", "Logo"); // Replace with your logo path
@@ -202,8 +235,8 @@ public class UserView extends BaseView {
         // Add shop button
         Button shopButton = new Button("Shop", event -> getUI().ifPresent(ui -> ui.navigate("shop")));
 
-        topTopBar.add(logo, shopButton);
-        return topTopBar;
+        topFooter.add(logo, shopButton);
+        return topFooter;
     }
 
     private HorizontalLayout createTopBar() {
