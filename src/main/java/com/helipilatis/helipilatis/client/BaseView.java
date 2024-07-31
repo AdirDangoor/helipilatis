@@ -20,5 +20,7 @@ public abstract class BaseView extends VerticalLayout {
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
+
+
     }
 }

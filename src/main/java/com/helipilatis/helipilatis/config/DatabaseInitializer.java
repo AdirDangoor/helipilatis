@@ -75,7 +75,7 @@ public class DatabaseInitializer {
             resultSet.next();
             if (resultSet.getInt(1) == 0) {
                 // Insert the default instructor
-                statement.execute("INSERT INTO instructors (id, name, phone) VALUES (INSTRUCTOR_SEQ.NEXTVAL, 'kaganov', '0123456789')");
+                statement.execute("INSERT INTO instructors (id, name, phone) VALUES (NEXT VALUE FOR INSTRUCTOR_SEQ, 'kaganov', '0123456789')");
                 logger.info("Default instructor 'kaganov' added to the database");
             }
 
