@@ -14,4 +14,7 @@ public interface CalendarRepository extends JpaRepository<PilatisClass, Long> {
 
     @Query("SELECT id FROM Instructor WHERE name = :name")
     Long findInstructorIdByName(@Param("name") String name);
+
+    @Query("SELECT c FROM PilatisClass c JOIN c.signedUsers u WHERE u.id = :userId")
+    List<PilatisClass> findClassesByUserId(@Param("userId") Long userId);
 }

@@ -12,6 +12,7 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.server.VaadinSession;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -74,13 +75,15 @@ public class UserView extends BaseView {
     }
 
     private void getCurrentUserId(Consumer<Long> callback) {
-        getUI().ifPresent(ui -> ui.getPage().executeJs(
-                "return localStorage.getItem('userId');"
-        ).then(String.class, userIdStr -> {
-            Long userId = userIdStr != null ? Long.parseLong(userIdStr) : null;
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            Long userId = (Long) session.getAttribute("userId");
             logger.info("userId: " + userId);
             callback.accept(userId);
-        }));
+        } else {
+            logger.severe("VaadinSession is null");
+            callback.accept(null);
+        }
     }
 
     private List<PilatisClass> fetchPilatisClasses() {

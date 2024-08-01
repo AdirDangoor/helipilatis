@@ -68,6 +68,14 @@ public class CalendarController {
     public void sendMessageToClassClients(@PathVariable Long id, @RequestBody String message) {
         calendarService.sendMessageToClassClients(id, message);
     }
+
+    @GetMapping("/user-classes/{userId}")
+    public ResponseEntity<List<PilatisClass>> getUserClasses(@PathVariable Long userId) {
+        logger.info("[FUNCTION-CalendarController-getUserClasses]");
+        List<PilatisClass> userClasses = calendarService.getUserClasses(userId);
+        return ResponseEntity.ok(userClasses);
+    }
+
 }
 
 //sign to class from client method

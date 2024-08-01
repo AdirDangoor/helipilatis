@@ -102,6 +102,10 @@ public class CalendarService {
         calendarRepository.deleteById(id);
     }
 
+    public List<PilatisClass> getUserClasses(Long userId) {
+        return calendarRepository.findClassesByUserId(userId);
+    }
+
     @Autowired
     private UserRepository userRepository;
 

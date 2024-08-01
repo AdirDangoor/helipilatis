@@ -7,6 +7,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,10 +62,13 @@ public class LoginView extends BaseView {
 
             ResponseEntity<String> response = apiRequests.login(loginRequest);
             if (response.getStatusCode() == HttpStatus.OK) {
-                // Store userId in local storage
+                // Store userId in VaadinSession
                 String userId = response.getBody();
                 logger.info("userId: " + userId);
-                getUI().ifPresent(ui -> ui.getPage().executeJs("localStorage.setItem('userId', $0);", userId));
+                VaadinSession session = VaadinSession.getCurrent();
+                if (session != null) {
+                    session.setAttribute("userId", Long.parseLong(userId));
+                }
                 Notification.show("User authenticated successfully");
                 getUI().ifPresent(ui -> ui.navigate("user"));
             } else {
