@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ public class MyClassesView extends BaseView {
 
     private final RestTemplate restTemplate;
     private final Logger logger = Logger.getLogger(MyClassesView.class.getName());
+    private VerticalLayout classesContainer;
 
     @Autowired
     public MyClassesView(RestTemplate restTemplate) {
@@ -46,6 +48,13 @@ public class MyClassesView extends BaseView {
         H1 header = new H1("My Classes");
         add(header);
 
+        // Initialize classes container
+        classesContainer = new VerticalLayout();
+        classesContainer.setPadding(true);
+        classesContainer.setSpacing(true);
+        classesContainer.setWidthFull();
+        add(classesContainer);
+
         // Fetch and display the user's classes
         displayUserClasses();
     }
@@ -65,7 +74,7 @@ public class MyClassesView extends BaseView {
             grid.addComponentColumn(this::createCancelButton).setHeader("");
 
             grid.setItems(userClasses);
-            add(grid);
+            classesContainer.add(grid);
         });
     }
 
@@ -89,7 +98,7 @@ public class MyClassesView extends BaseView {
 
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
-                            UI.getCurrent().getPage().reload(); // Reload the page to update the list of classes
+                            refreshClassesContainer(); // Refresh classes instead of reloading the page
                         } else {
                             Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
                         }
@@ -112,6 +121,26 @@ public class MyClassesView extends BaseView {
                 .set("border-radius", "4px")
                 .set("padding", "0.5em 1em");
         return button;
+    }
+
+    private void refreshClassesContainer() {
+        getCurrentUserId(userId -> {
+            if (userId == null) {
+                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            List<PilatisClass> userClasses = fetchUserClasses(userId);
+            classesContainer.removeAll();
+            Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
+            grid.addColumn(PilatisClass::getDate).setHeader("Date");
+            grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
+            grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
+            grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
+            grid.addComponentColumn(this::createCancelButton).setHeader("");
+
+            grid.setItems(userClasses);
+            classesContainer.add(grid);
+        });
     }
 
     private void getCurrentUserId(Consumer<Long> callback) {
