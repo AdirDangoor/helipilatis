@@ -30,71 +30,41 @@ import java.util.stream.Stream;
 public class UserView extends BaseView {
 
 
+    private Tabs dateTabs;
+    private VerticalLayout classesContainer;
+
+
 
     @Autowired
     private HttpSession session;
 
-    @Autowired
     public UserView(RestTemplate restTemplate) {
         super();
-
-        // Check if the user is an instructor
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            Boolean isInstructor = (Boolean) session.getAttribute("isInstructor");
-            if (isInstructor != null && isInstructor) {
-                Notification.show("Instructors cannot view this page", 3000, Notification.Position.MIDDLE);
-                getUI().ifPresent(ui -> ui.navigate("instructor"));
-                return;
-            }
-        }
-
-
         this.restTemplate = restTemplate;
-        setSizeFull(); // Ensure the UserView takes up the full size
-        setAlignItems(Alignment.STRETCH); // Stretch items to take full width
-        setJustifyContentMode(JustifyContentMode.START); // Align content to the start
+        initializeView();
+    }
 
-        // Set background image
-        String imagePath = "images/shop_background.jpg"; // Replace with your image path
+    private void initializeView() {
+        setSizeFull();
+        setAlignItems(Alignment.STRETCH);
+        setJustifyContentMode(JustifyContentMode.START);
+        setBackground();
+        HorizontalLayout topFooter = createTopFooter();
+        setMaxWidth("100%");
+        setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.setWidthFull();
+        mainLayout.add(topFooter);
+        displaySchedule(mainLayout);
+        add(mainLayout);
+    }
+
+    private void setBackground() {
+        String imagePath = "images/shop_background.jpg";
         getElement().getStyle()
                 .set("background-image", "url('" + imagePath + "')")
                 .set("background-size", "cover")
                 .set("background-position", "center");
-
-        // Create the top top bar with the logo and shop button
-        HorizontalLayout topFooter = createTopFooter();
-
-        // Create the top bar with the date and time
-        HorizontalLayout topBar = createTopBar();
-
-        // Set the max width and center the layout
-        setMaxWidth("100%"); // Set max width to 100% to take full width
-        setDefaultHorizontalComponentAlignment(Alignment.STRETCH); // Stretch components horizontally
-
-        // Create a vertical layout and add components to it
-        VerticalLayout mainLayout = new VerticalLayout();
-        mainLayout.setWidthFull(); // Ensure the main layout takes full width
-
-        // Add the topTopBar and topBar to the main layout
-        mainLayout.add(topFooter, topBar);
-
-        // Fetch and display the schedule
-        displaySchedule(mainLayout);
-
-        add(mainLayout);
-    }
-
-    private void getCurrentUserId(Consumer<Long> callback) {
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            Long userId = (Long) session.getAttribute("userId");
-            logger.info("userId: " + userId);
-            callback.accept(userId);
-        } else {
-            logger.severe("VaadinSession is null");
-            callback.accept(null);
-        }
     }
 
     private List<PilatisClass> fetchPilatisClasses() {
@@ -111,6 +81,21 @@ public class UserView extends BaseView {
     }
 
 
+    private void getCurrentUserId(Consumer<Long> callback) {
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            Long userId = (Long) session.getAttribute("userId");
+            logger.info("userId: " + userId);
+            callback.accept(userId);
+        } else {
+            logger.severe("VaadinSession is null");
+            callback.accept(null);
+        }
+    }
+
+
+
+
 
 
 
@@ -120,46 +105,57 @@ public class UserView extends BaseView {
     private void displaySchedule(VerticalLayout mainLayout) {
         List<PilatisClass> pilatisClasses = fetchPilatisClasses();
         Map<LocalDate, List<PilatisClass>> groupedByDate = groupByDate(pilatisClasses);
-
-        // Sort the dates in ascending order
         Stream<LocalDate> sortedDates = groupedByDate.keySet().stream().sorted();
+        initializeDateTabs();
+        initializeClassesContainer();
+        addDateTabs(sortedDates, groupedByDate);
+        retrieveSelectedTabFromSession();
+        mainLayout.add(dateTabs, classesContainer);
+    }
 
-        // Create a Tabs component for the dates
-        Tabs dateTabs = new Tabs();
+    private void initializeDateTabs() {
+        dateTabs = new Tabs();
         dateTabs.setWidthFull();
         dateTabs.getStyle().set("overflow-x", "auto");
+    }
 
-        // Container to hold the classes for each day
-        VerticalLayout classesContainer = new VerticalLayout();
+    private void initializeClassesContainer() {
+        classesContainer = new VerticalLayout();
         classesContainer.setPadding(true);
         classesContainer.setSpacing(true);
-        classesContainer.setWidthFull(); // Ensure the container takes full width
+        classesContainer.setWidthFull();
+    }
 
+    private void addDateTabs(Stream<LocalDate> sortedDates, Map<LocalDate, List<PilatisClass>> groupedByDate) {
         sortedDates.forEach(date -> {
             List<PilatisClass> items = groupedByDate.get(date);
-
-            // Create tab for each day
             Tab dateTab = new Tab(date.toString());
             dateTab.getElement().getStyle().set("padding", "0.5em 1em");
             dateTabs.add(dateTab);
         });
 
         dateTabs.addSelectedChangeListener(event -> {
-            // Clear previous classes
             classesContainer.removeAll();
-            // Get the selected date
             Tab selectedTab = dateTabs.getSelectedTab();
             String selectedDate = selectedTab.getLabel();
-            // Find the classes for the selected date
             LocalDate date = LocalDate.parse(selectedDate);
             List<PilatisClass> items = groupedByDate.get(date);
-            // Add the classes for the selected date
             VerticalLayout dayClasses = createDayClasses(items);
             classesContainer.add(dayClasses);
         });
+    }
 
-        // Add the date tabs and classes container to the main layout
-        mainLayout.add(dateTabs, classesContainer);
+    private void retrieveSelectedTabFromSession() {
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            String selectedDate = (String) session.getAttribute("selectedDate");
+            if (selectedDate != null) {
+                dateTabs.getChildren()
+                        .filter(tab -> ((Tab) tab).getLabel().equals(selectedDate))
+                        .findFirst()
+                        .ifPresent(tab -> dateTabs.setSelectedTab((Tab) tab));
+            }
+        }
     }
 
     private VerticalLayout createDayClasses(List<PilatisClass> items) {
@@ -236,6 +232,18 @@ public class UserView extends BaseView {
         return button;
     }
 
+    private void refreshClassesContainer() {
+        classesContainer.removeAll();
+        Tab selectedTab = dateTabs.getSelectedTab();
+        String selectedDate = selectedTab.getLabel();
+        LocalDate date = LocalDate.parse(selectedDate);
+        List<PilatisClass> items = fetchPilatisClasses().stream()
+                .filter(pilatisClass -> pilatisClass.getDate().equals(date))
+                .collect(Collectors.toList());
+        VerticalLayout dayClasses = createDayClasses(items);
+        classesContainer.add(dayClasses);
+    }
+
     private HorizontalLayout createTopFooter() {
         HorizontalLayout topFooter = new HorizontalLayout();
         topFooter.setWidthFull();
@@ -253,8 +261,5 @@ public class UserView extends BaseView {
         return topFooter;
     }
 
-    private HorizontalLayout createTopBar() {
-        // Implementation of createTopBar method
-        return new HorizontalLayout();
-    }
+
 }

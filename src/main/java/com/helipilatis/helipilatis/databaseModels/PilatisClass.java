@@ -15,7 +15,8 @@ public class PilatisClass {
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
-    private int maxParticipants; // New attribute
+    private int maxParticipants;
+    private boolean canceled; // New field
 
     @Column(name = "instructor_id")
     private Long instructorId;
@@ -37,13 +38,14 @@ public class PilatisClass {
     }
 
     // Parameterized constructor for convenience
-    public PilatisClass(LocalDate date, LocalTime startTime, LocalTime endTime, Long instructorId, List<User> signedUsers, int maxParticipants) {
+    public PilatisClass(LocalDate date, LocalTime startTime, LocalTime endTime, Long instructorId, List<User> signedUsers, int maxParticipants, boolean canceled) {
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
         this.instructorId = instructorId;
         this.signedUsers = signedUsers;
         this.maxParticipants = maxParticipants;
+        this.canceled = canceled;
     }
 
     // Getters and setters
@@ -109,5 +111,13 @@ public class PilatisClass {
 
     public void setMaxParticipants(int maxParticipants) {
         this.maxParticipants = maxParticipants;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
+    }
+
+    public void setCanceled(boolean canceled) {
+        this.canceled = canceled;
     }
 }

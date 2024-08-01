@@ -54,6 +54,7 @@ public class DatabaseInitializer {
                     "end_time TIME NOT NULL, " +
                     "instructor_id BIGINT, " +
                     "max_participants INT, " + // New column
+                    "canceled BOOLEAN DEFAULT FALSE, " + // New column
                     "FOREIGN KEY (instructor_id) REFERENCES instructors(id))");
 
             statement.execute("CREATE SEQUENCE IF NOT EXISTS PILATIS_CLASS_SEQ START WITH 1 INCREMENT BY 1");

@@ -5,6 +5,8 @@ import com.helipilatis.helipilatis.client.requests.PilatisClass;
 import com.helipilatis.helipilatis.server.requests.LoginRequest;
 import com.helipilatis.helipilatis.server.requests.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -66,13 +68,32 @@ public class ApiRequests {
         }
     }
 
+//    public ResponseEntity<String> cancelClassAsInstructor(Long classId) {
+//        String url = "http://localhost:8080/api/calendar/classes/" + classId + "/cancel";
+//        try {
+//            restTemplate.delete(url);
+//            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Class successfully cancelled");
+//        } catch (HttpClientErrorException e) {
+//            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+//        }
+//    }
+
     public ResponseEntity<String> cancelClassAsInstructor(Long classId) {
-        String url = "http://localhost:8080/api/calendar/classes/" + classId + "/cancel";
+        String url = "http://localhost:8080/api/calendar/instructor/classes/" + classId + "/cancel";
         try {
-            restTemplate.delete(url);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Class successfully cancelled");
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+            return restTemplate.postForEntity(url, null, String.class);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(e.getMessage());
         }
     }
+
+    public ResponseEntity<String> restoreClassAsInstructor(Long classId) {
+        String url = "http://localhost:8080/api/calendar/instructor/classes/" + classId + "/restore";
+        try {
+            return restTemplate.postForEntity(url, null, String.class);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+
 }

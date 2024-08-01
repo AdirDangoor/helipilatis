@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
-
+import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.DayOfWeek;
@@ -66,6 +66,7 @@ public class CalendarService {
                         calendarEntry.setEndTime(LocalTime.of(hour + 1, 0));
                         calendarEntry.setInstructorId(instructorId);
                         calendarEntry.setMaxParticipants(10);
+                        calendarEntry.setCanceled(false);
                         calendarEntries.add(calendarEntry);
                     }
                 }
@@ -87,6 +88,12 @@ public class CalendarService {
 
     public List<PilatisClass> getAllClasses() {
         return calendarRepository.findAll();
+    }
+
+    public List<PilatisClass> getAllActiveClasses() {
+        return calendarRepository.findAll().stream()
+                .filter(pilatisClass -> !pilatisClass.isCanceled())
+                .collect(Collectors.toList());
     }
 
     public PilatisClass saveClass(PilatisClass pilatisClass) {
@@ -130,7 +137,7 @@ public class CalendarService {
     }
 
 
-    public void cancelClass(Long classId, Long userId) {
+    public void cancelClassAsInstructor(Long classId, Long userId) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         User user = userRepository.findById(userId)
@@ -140,10 +147,29 @@ public class CalendarService {
         calendarRepository.save(pilatisClass);
     }
 
-    public void cancelClassAsInstructor(Long classId) {
-        // Logic to cancel the class
-        calendarRepository.deleteById(classId);
+
+    public boolean cancelClassAsInstructor(Long classId) {
+        try {
+            PilatisClass pilatisClass = calendarRepository.findById(classId).orElseThrow();
+            pilatisClass.setCanceled(true);
+            calendarRepository.save(pilatisClass);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
+
+    public boolean restoreClassAsInstructor(Long classId) {
+        try {
+            PilatisClass pilatisClass = calendarRepository.findById(classId).orElseThrow();
+            pilatisClass.setCanceled(false);
+            calendarRepository.save(pilatisClass);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
     public void sendMessageToClassClients(Long classId, String message) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)

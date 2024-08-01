@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.helipilatis.helipilatis.config.LoggingUtil;
+
 import java.util.logging.Logger;
 import java.util.List;
 
@@ -21,8 +21,8 @@ public class CalendarController {
     private CalendarService calendarService;
 
     @GetMapping("/classes")
-    public List<PilatisClass> getAllClasses() {
-        return calendarService.getAllClasses();
+    public List<PilatisClass> getAllActiveClasses() {
+        return calendarService.getAllActiveClasses();
     }
 
     @PostMapping("/classes")
@@ -57,7 +57,7 @@ public class CalendarController {
     @PostMapping("/classes/{classId}/cancel")
     public ResponseEntity<String> cancelClass(@PathVariable Long classId, @RequestParam Long userId) {
         try {
-            calendarService.cancelClass(classId, userId);
+            calendarService.cancelClassAsInstructor(classId, userId);
             return ResponseEntity.ok("Class cancelled successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error cancelling class: " + e.getMessage());
@@ -76,12 +76,32 @@ public class CalendarController {
         return ResponseEntity.ok(userClasses);
     }
 
-
-    @DeleteMapping("/classes/{classId}/cancel")
-    public ResponseEntity<String> cancelClassAsInstructor(@PathVariable Long classId) {
-        calendarService.cancelClassAsInstructor(classId);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/instructor/classes")
+    public List<PilatisClass> instructorGetAllClasses() {
+        return calendarService.getAllClasses();
     }
+
+
+    @PostMapping("/instructor/classes/{classId}/cancel")
+    public ResponseEntity<String> cancelClass(@PathVariable Long classId) {
+        boolean success = calendarService.cancelClassAsInstructor(classId);
+        if (success) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.status(500).body("Error cancelling class");
+        }
+    }
+
+    @PostMapping("/instructor/classes/{classId}/restore")
+    public ResponseEntity<String> restoreClass(@PathVariable Long classId) {
+        boolean success = calendarService.restoreClassAsInstructor(classId);
+        if (success) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.status(500).body("Error restoring class");
+        }
+    }
+
 }
 
 //sign to class from client method
