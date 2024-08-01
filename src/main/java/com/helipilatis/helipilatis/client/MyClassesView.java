@@ -6,7 +6,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Route("my-classes")
 public class MyClassesView extends BaseView {
@@ -32,6 +30,17 @@ public class MyClassesView extends BaseView {
         setSizeFull();
         setAlignItems(Alignment.STRETCH);
         setJustifyContentMode(JustifyContentMode.START);
+
+        // Check if the user is an instructor
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            Boolean isInstructor = (Boolean) session.getAttribute("isInstructor");
+            if (isInstructor != null && isInstructor) {
+                Notification.show("Instructors cannot view this page", 3000, Notification.Position.MIDDLE);
+                getUI().ifPresent(ui -> ui.navigate("instructor"));
+                return;
+            }
+        }
 
         // Add header
         H1 header = new H1("My Classes");
@@ -76,7 +85,7 @@ public class MyClassesView extends BaseView {
                 Long userId = (Long) session.getAttribute("userId");
                 if (userId != null) {
                     try {
-                        ResponseEntity<String> response = apiRequests.cancelClass(pilatisClass.getId(), userId);
+                        ResponseEntity<String> response = apiRequests.cancelClassForUser(pilatisClass.getId(), userId);
 
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);

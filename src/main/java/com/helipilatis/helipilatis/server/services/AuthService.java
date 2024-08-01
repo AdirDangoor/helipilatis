@@ -7,6 +7,7 @@ import com.helipilatis.helipilatis.databaseModels.User;
 import com.helipilatis.helipilatis.databaseModels.UserRepository;
 import com.helipilatis.helipilatis.databaseModels.InstructorRepository;
 import com.helipilatis.helipilatis.server.requests.LoginRequest;
+import com.helipilatis.helipilatis.server.requests.LoginResponse;
 import com.helipilatis.helipilatis.server.requests.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,17 +23,17 @@ public class AuthService {
     @Autowired
     private InstructorRepository instructorRepository;
 
-    public Long login(LoginRequest loginRequest) throws LoginException {
+    public LoginResponse login(LoginRequest loginRequest) throws LoginException {
         String phone = loginRequest.getPhone();
 
         if (phoneExistsInInstructors(phone)) {
             Instructor instructor = instructorRepository.findByPhone(phone).orElseThrow(() -> new LoginException("Phone number does not exist"));
-            return instructor.getId();
+            return new LoginResponse(instructor.getId(), true);
         }
 
         if (phoneExistsInUsers(phone)) {
             User user = userRepository.findByPhone(phone).orElseThrow(() -> new LoginException("Phone number does not exist"));
-            return user.getId();
+            return new LoginResponse(user.getId(), false);
         }
 
         throw new LoginException("Phone number does not exist");

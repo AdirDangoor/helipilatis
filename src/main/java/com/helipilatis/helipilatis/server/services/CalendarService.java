@@ -140,6 +140,11 @@ public class CalendarService {
         calendarRepository.save(pilatisClass);
     }
 
+    public void cancelClassAsInstructor(Long classId) {
+        // Logic to cancel the class
+        calendarRepository.deleteById(classId);
+    }
+
     public void sendMessageToClassClients(Long classId, String message) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));

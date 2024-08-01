@@ -1,5 +1,6 @@
 package com.helipilatis.helipilatis.client;
 
+import com.helipilatis.helipilatis.client.requests.LoginResponse;
 import com.helipilatis.helipilatis.server.requests.LoginRequest;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
@@ -8,6 +9,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Div;
 import java.util.logging.Logger;
+
 @Route("login")
 public class LoginView extends BaseView {
 
@@ -31,6 +34,7 @@ public class LoginView extends BaseView {
                 .set("background-image", "url('" + imagePath + "')")
                 .set("background-size", "cover")
                 .set("background-position", "center");
+
         // Create a container for the login form
         Div loginForm = new Div();
         loginForm.getStyle().set("width", "300px")
@@ -60,17 +64,30 @@ public class LoginView extends BaseView {
             LoginRequest loginRequest = new LoginRequest();
             loginRequest.setPhone(phone.getValue());
 
-            ResponseEntity<String> response = apiRequests.login(loginRequest);
+            ResponseEntity<LoginResponse> response = apiRequests.login(loginRequest);
             if (response.getStatusCode() == HttpStatus.OK) {
-                // Store userId in VaadinSession
-                String userId = response.getBody();
-                logger.info("userId: " + userId);
-                VaadinSession session = VaadinSession.getCurrent();
-                if (session != null) {
-                    session.setAttribute("userId", Long.parseLong(userId));
+                LoginResponse loginResponse = response.getBody();
+                if (loginResponse != null) {
+                    Long userId = loginResponse.getUserId();
+                    boolean isInstructor = loginResponse.isInstructor();
+                    logger.info("userId: " + userId + ", isInstructor: " + isInstructor);
+
+                    // Store userId in VaadinSession
+                    VaadinSession session = VaadinSession.getCurrent();
+                    if (session != null) {
+                        session.setAttribute("userId", userId);
+                        session.setAttribute("isInstructor", isInstructor);
+                    }
+
+
+                    if (isInstructor) {
+                        Notification.show("Login successful - Instructor", 3000, Notification.Position.MIDDLE);
+                        getUI().ifPresent(ui -> ui.navigate("instructor"));
+                    } else {
+                        Notification.show("Login successful - User", 3000, Notification.Position.MIDDLE);
+                        getUI().ifPresent(ui -> ui.navigate("user"));
+                    }
                 }
-                Notification.show("User authenticated successfully");
-                getUI().ifPresent(ui -> ui.navigate("user"));
             } else {
                 Notification.show("Authentication failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
             }

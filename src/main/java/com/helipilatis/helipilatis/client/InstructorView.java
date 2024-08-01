@@ -13,7 +13,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.server.VaadinSession;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -26,29 +25,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Route("user")
-public class UserView extends BaseView {
-
-
+@Route("instructor")
+public class InstructorView extends BaseView{
 
     @Autowired
-    private HttpSession session;
-
-    @Autowired
-    public UserView(RestTemplate restTemplate) {
+    public InstructorView(RestTemplate restTemplate) {
         super();
-
-        // Check if the user is an instructor
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            Boolean isInstructor = (Boolean) session.getAttribute("isInstructor");
-            if (isInstructor != null && isInstructor) {
-                Notification.show("Instructors cannot view this page", 3000, Notification.Position.MIDDLE);
-                getUI().ifPresent(ui -> ui.navigate("instructor"));
-                return;
-            }
-        }
-
 
         this.restTemplate = restTemplate;
         setSizeFull(); // Ensure the UserView takes up the full size
@@ -187,45 +169,24 @@ public class UserView extends BaseView {
                 Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
                 return;
             }
+            
+            button.setText("CANCEL");
+            button.addClickListener(e -> {
+                try {
+                    ResponseEntity<String> response = apiRequests.cancelClassAsInstructor(pilatisClass.getId());
 
-            boolean isBooked = pilatisClass.getSignedUsers().stream()
-                    .anyMatch(user -> user.getId().equals(userId));
-
-            if (isBooked) {
-                button.setText("CANCEL");
-                button.addClickListener(e -> {
-                    try {
-                        ResponseEntity<String> response = apiRequests.cancelClassForUser(pilatisClass.getId(), userId);
-
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
-                            UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
-                        } else {
-                            Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
-                        }
-                    } catch (Exception ex) {
-                        logger.severe("Error cancelling class: " + ex.getMessage());
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
+                        UI.getCurrent().getPage().reload(); // Reload the page to update the list of classes
+                    } else {
                         Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
                     }
-                });
-            } else {
-                button.setText("BOOK VIRTUAL");
-                button.addClickListener(e -> {
-                    try {
-                        ResponseEntity<String> response = apiRequests.bookClass(pilatisClass.getId(), userId);
+                } catch (Exception ex) {
+                    logger.severe("Error cancelling class: " + ex.getMessage());
+                    Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
+                }
+            });
 
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully booked", 3000, Notification.Position.MIDDLE);
-                            UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
-                        } else {
-                            Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
-                        }
-                    } catch (Exception ex) {
-                        logger.severe("Error booking class: " + ex.getMessage());
-                        Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
-                    }
-                });
-            }
         });
 
         button.getStyle()

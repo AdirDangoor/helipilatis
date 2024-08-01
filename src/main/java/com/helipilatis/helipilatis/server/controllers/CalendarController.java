@@ -76,6 +76,12 @@ public class CalendarController {
         return ResponseEntity.ok(userClasses);
     }
 
+
+    @DeleteMapping("/classes/{classId}/cancel")
+    public ResponseEntity<String> cancelClassAsInstructor(@PathVariable Long classId) {
+        calendarService.cancelClassAsInstructor(classId);
+        return ResponseEntity.noContent().build();
+    }
 }
 
 //sign to class from client method
