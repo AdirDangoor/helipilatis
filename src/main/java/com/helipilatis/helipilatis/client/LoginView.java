@@ -9,11 +9,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import org.aspectj.weaver.ast.Not;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Div;
 import java.util.logging.Logger;
@@ -21,21 +18,31 @@ import java.util.logging.Logger;
 @Route("login")
 public class LoginView extends BaseView {
 
+    private TextField phone;
+    private Button loginButton;
+
     public LoginView() {
         super();
-        // Set the VerticalLayout to full size and center its content
+        initializeLayout();
+        setBackgroundImage();
+        createLoginForm();
+    }
+
+    private void initializeLayout() {
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
+    }
 
-        // Set background image
+    private void setBackgroundImage() {
         String imagePath = "images/shop_background.jpg"; // Replace with your image path
         getElement().getStyle()
                 .set("background-image", "url('" + imagePath + "')")
                 .set("background-size", "cover")
                 .set("background-position", "center");
+    }
 
-        // Create a container for the login form
+    private void createLoginForm() {
         Div loginForm = new Div();
         loginForm.getStyle().set("width", "300px")
                 .set("padding", "20px")
@@ -43,54 +50,49 @@ public class LoginView extends BaseView {
                 .set("border-radius", "5px")
                 .set("background-color", "white");
 
-        // Title
         H1 title = new H1("Login");
         title.getStyle().set("text-align", "center");
 
-        // Login form elements
-        TextField phone = new TextField("Phone Number");
+        phone = new TextField("Phone Number");
         phone.setWidthFull();
 
-        Button loginButton = new Button("Login");
+        loginButton = new Button("Login");
         loginButton.setWidthFull();
 
-        // Add components to the login form container
         loginForm.add(title, phone, loginButton);
-
-        // Add the login form container to the main layout
         add(loginForm);
 
-        loginButton.addClickListener(event -> {
-            LoginRequest loginRequest = new LoginRequest();
-            loginRequest.setPhone(phone.getValue());
+        loginButton.addClickListener(event -> handleLoginButtonClick());
+    }
 
-            ResponseEntity<LoginResponse> response = apiRequests.login(loginRequest);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                LoginResponse loginResponse = response.getBody();
-                if (loginResponse != null) {
-                    Long userId = loginResponse.getUserId();
-                    boolean isInstructor = loginResponse.isInstructor();
-                    logger.info("userId: " + userId + ", isInstructor: " + isInstructor);
+    private void handleLoginButtonClick() {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setPhone(phone.getValue());
 
-                    // Store userId in VaadinSession
-                    VaadinSession session = VaadinSession.getCurrent();
-                    if (session != null) {
-                        session.setAttribute("userId", userId);
-                        session.setAttribute("isInstructor", isInstructor);
-                    }
+        ResponseEntity<LoginResponse> response = apiRequests.login(loginRequest);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            LoginResponse loginResponse = response.getBody();
+            if (loginResponse != null) {
+                Long userId = loginResponse.getUserId();
+                boolean isInstructor = loginResponse.isInstructor();
+                logger.info("userId: " + userId + ", isInstructor: " + isInstructor);
 
-
-                    if (isInstructor) {
-                        Notification.show("Login successful - Instructor", 3000, Notification.Position.MIDDLE);
-                        getUI().ifPresent(ui -> ui.navigate("instructor"));
-                    } else {
-                        Notification.show("Login successful - User", 3000, Notification.Position.MIDDLE);
-                        getUI().ifPresent(ui -> ui.navigate("user"));
-                    }
+                VaadinSession session = VaadinSession.getCurrent();
+                if (session != null) {
+                    session.setAttribute("userId", userId);
+                    session.setAttribute("isInstructor", isInstructor);
                 }
-            } else {
-                Notification.show("Authentication failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
+
+                if (isInstructor) {
+                    Notification.show("Login successful - Instructor", 3000, Notification.Position.MIDDLE);
+                    getUI().ifPresent(ui -> ui.navigate("instructor"));
+                } else {
+                    Notification.show("Login successful - User", 3000, Notification.Position.MIDDLE);
+                    getUI().ifPresent(ui -> ui.navigate("user"));
+                }
             }
-        });
+        } else {
+            Notification.show("Authentication failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
+        }
     }
 }

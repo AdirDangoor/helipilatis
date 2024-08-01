@@ -18,22 +18,39 @@ import org.springframework.web.client.RestTemplate;
 @Route("register")
 public class RegisterView extends BaseView {
 
+    private final TextField phone = createStyledTextField("Phone");
+    private final TextField name = createStyledTextField("Name");
+    private final TextField age = createStyledTextField("Age");
+    private final ComboBox<String> genderComboBox = createStyledComboBox("Gender", new String[]{"Man", "Woman", "Prefer not to say"});
+    private final Button registerButton = new Button("Register");
 
     public RegisterView() {
         super();
+        setupLayout();
+        setupEventHandlers();
+    }
 
+    private void setupLayout() {
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
 
         // Set background image
-        String imagePath = "images/shop_background.jpg"; // Replace with your image path
+        setBackgroundImage("images/shop_background.jpg");
+
+        // Create and add the registration form
+        Div regForm = createRegistrationForm();
+        add(regForm);
+    }
+
+    private void setBackgroundImage(String imagePath) {
         getElement().getStyle()
                 .set("background-image", "url('" + imagePath + "')")
                 .set("background-size", "cover")
                 .set("background-position", "center");
+    }
 
-        // Create a container for the registration form
+    private Div createRegistrationForm() {
         Div regForm = new Div();
         regForm.getStyle().set("width", "300px")
                 .set("padding", "20px")
@@ -42,62 +59,64 @@ public class RegisterView extends BaseView {
                 .set("background-color", "white");
 
         VerticalLayout formLayout = new VerticalLayout();
-        formLayout.setWidth("100%"); // Use full width of the container
+        formLayout.setWidth("100%");
         formLayout.setAlignItems(Alignment.STRETCH);
 
-        // Title
         H1 title = new H1("Register");
         title.getStyle().set("text-align", "center");
 
-        // Registration form fields
-        TextField phone = createStyledTextField("Phone");
-        TextField name = createStyledTextField("Name");
-        TextField age = createStyledTextField("Age");
-        ComboBox<String> genderComboBox = createStyledComboBox("Gender", new String[]{"Man", "Woman", "Prefer not to say"});
-        Button registerButton = new Button("Register");
-
         formLayout.add(title, phone, name, age, genderComboBox, registerButton);
         regForm.add(formLayout);
-        add(regForm); // Add the registration form to the main layout
 
-        registerButton.addClickListener(event -> {
-            try {
-                int ageValue = Integer.parseInt(age.getValue());
-                String phoneValue = phone.getValue();
-                String nameValue = name.getValue();
-                String genderValue = genderComboBox.getValue();
+        return regForm;
+    }
 
-                if (phoneValue == null || phoneValue.isEmpty()) {
-                    Notification.show("Phone number cannot be empty.", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
+    private void setupEventHandlers() {
+        registerButton.addClickListener(event -> handleRegisterButtonClick());
+    }
 
-                RegisterRequest registerRequest = new RegisterRequest();
-                registerRequest.setAge(ageValue);
-                registerRequest.setPhone(phoneValue);
-                registerRequest.setName(nameValue);
-                registerRequest.setGender(genderValue);
+    private void handleRegisterButtonClick() {
+        try {
+            RegisterRequest registerRequest = buildRegisterRequest();
+            ResponseEntity<String> response = apiRequests.register(registerRequest);
 
-
-                ResponseEntity<String> response = apiRequests.register(registerRequest);
-
-                if (response.getStatusCode() == HttpStatus.OK) {
-                    // Store userId in VaadinSession
-                    String userId = response.getBody();
-                    logger.info("userId: " + userId);
-                    VaadinSession session = VaadinSession.getCurrent();
-                    if (session != null) {
-                        session.setAttribute("userId", Long.parseLong(userId));
-                    }
-                    Notification.show("User registered successfully");
-                    getUI().ifPresent(ui -> ui.navigate("user"));
-                } else {
-                    Notification.show("Registration failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
-                }
-            } catch (NumberFormatException e) {
-                Notification.show("Invalid age input. Please enter a valid number.", 3000, Notification.Position.MIDDLE);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                handleSuccessfulRegistration(response.getBody());
+            } else {
+                Notification.show("Registration failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
             }
-        });
+        } catch (NumberFormatException e) {
+            Notification.show("Invalid age input. Please enter a valid number.", 3000, Notification.Position.MIDDLE);
+        }
+    }
+
+    private RegisterRequest buildRegisterRequest() {
+        int ageValue = Integer.parseInt(age.getValue());
+        String phoneValue = phone.getValue();
+        String nameValue = name.getValue();
+        String genderValue = genderComboBox.getValue();
+
+        if (phoneValue == null || phoneValue.isEmpty()) {
+            throw new IllegalArgumentException("Phone number cannot be empty.");
+        }
+
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setAge(ageValue);
+        registerRequest.setPhone(phoneValue);
+        registerRequest.setName(nameValue);
+        registerRequest.setGender(genderValue);
+
+        return registerRequest;
+    }
+
+    private void handleSuccessfulRegistration(String userId) {
+        logger.info("userId: " + userId);
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            session.setAttribute("userId", Long.parseLong(userId));
+        }
+        Notification.show("User registered successfully");
+        getUI().ifPresent(ui -> ui.navigate("user"));
     }
 
     private TextField createStyledTextField(String label) {
