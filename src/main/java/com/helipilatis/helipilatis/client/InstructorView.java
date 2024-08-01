@@ -28,6 +28,10 @@ import java.util.stream.Stream;
 @Route("instructor")
 public class InstructorView extends BaseView{
 
+    private Tabs dateTabs;
+
+    private VerticalLayout classesContainer;
+
     @Autowired
     public InstructorView(RestTemplate restTemplate) {
         super();
@@ -44,11 +48,9 @@ public class InstructorView extends BaseView{
                 .set("background-size", "cover")
                 .set("background-position", "center");
 
-        // Create the top top bar with the logo and shop button
+        // Create the top bar with the logo and shop button
         HorizontalLayout topFooter = createTopFooter();
 
-        // Create the top bar with the date and time
-        HorizontalLayout topBar = createTopBar();
 
         // Set the max width and center the layout
         setMaxWidth("100%"); // Set max width to 100% to take full width
@@ -59,7 +61,7 @@ public class InstructorView extends BaseView{
         mainLayout.setWidthFull(); // Ensure the main layout takes full width
 
         // Add the topTopBar and topBar to the main layout
-        mainLayout.add(topFooter, topBar);
+        mainLayout.add(topFooter);
 
         // Fetch and display the schedule
         displaySchedule(mainLayout);
@@ -95,10 +97,6 @@ public class InstructorView extends BaseView{
 
 
 
-
-
-
-
     private void displaySchedule(VerticalLayout mainLayout) {
         List<PilatisClass> pilatisClasses = fetchPilatisClasses();
         Map<LocalDate, List<PilatisClass>> groupedByDate = groupByDate(pilatisClasses);
@@ -106,13 +104,13 @@ public class InstructorView extends BaseView{
         // Sort the dates in ascending order
         Stream<LocalDate> sortedDates = groupedByDate.keySet().stream().sorted();
 
-        // Create a Tabs component for the dates
-        Tabs dateTabs = new Tabs();
+        // Initialize the dateTabs component
+        dateTabs = new Tabs();
         dateTabs.setWidthFull();
         dateTabs.getStyle().set("overflow-x", "auto");
 
-        // Container to hold the classes for each day
-        VerticalLayout classesContainer = new VerticalLayout();
+        // Initialize the classesContainer component
+        classesContainer = new VerticalLayout();
         classesContainer.setPadding(true);
         classesContainer.setSpacing(true);
         classesContainer.setWidthFull(); // Ensure the container takes full width
@@ -140,6 +138,18 @@ public class InstructorView extends BaseView{
             classesContainer.add(dayClasses);
         });
 
+        // Retrieve the selected tab from the session
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            String selectedDate = (String) session.getAttribute("selectedDate");
+            if (selectedDate != null) {
+                dateTabs.getChildren()
+                        .filter(tab -> ((Tab) tab).getLabel().equals(selectedDate))
+                        .findFirst()
+                        .ifPresent(tab -> dateTabs.setSelectedTab((Tab) tab));
+            }
+        }
+
         // Add the date tabs and classes container to the main layout
         mainLayout.add(dateTabs, classesContainer);
     }
@@ -162,6 +172,7 @@ public class InstructorView extends BaseView{
         return dayClasses;
     }
 
+    // Modify the createBookButton method
     private Button createBookButton(PilatisClass pilatisClass) {
         Button button = new Button();
         getCurrentUserId(userId -> {
@@ -169,15 +180,22 @@ public class InstructorView extends BaseView{
                 Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
                 return;
             }
-            
+
             button.setText("CANCEL");
             button.addClickListener(e -> {
                 try {
+                    // Store the selected tab in the session
+                    VaadinSession session = VaadinSession.getCurrent();
+                    if (session != null) {
+                        Tab selectedTab = dateTabs.getSelectedTab();
+                        session.setAttribute("selectedDate", selectedTab.getLabel());
+                    }
+
                     ResponseEntity<String> response = apiRequests.cancelClassAsInstructor(pilatisClass.getId());
 
                     if (response.getStatusCode().is2xxSuccessful()) {
                         Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
-                        UI.getCurrent().getPage().reload(); // Reload the page to update the list of classes
+                        refreshClassesContainer(); // Refresh the classes container
                     } else {
                         Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
                     }
@@ -197,6 +215,29 @@ public class InstructorView extends BaseView{
         return button;
     }
 
+    // Add a new method to refresh the classes container
+    private void refreshClassesContainer() {
+        // Clear previous classes
+        classesContainer.removeAll();
+        // Get the selected date
+        Tab selectedTab = dateTabs.getSelectedTab();
+        String selectedDate = selectedTab.getLabel();
+        // Find the classes for the selected date
+        LocalDate date = LocalDate.parse(selectedDate);
+        List<PilatisClass> items = fetchPilatisClasses().stream()
+                .filter(pilatisClass -> pilatisClass.getDate().equals(date))
+                .collect(Collectors.toList());
+        // Add the classes for the selected date
+        VerticalLayout dayClasses = createDayClasses(items);
+        classesContainer.add(dayClasses);
+    }
+
+
+
+
+
+
+
     private HorizontalLayout createTopFooter() {
         HorizontalLayout topFooter = new HorizontalLayout();
         topFooter.setWidthFull();
@@ -214,8 +255,4 @@ public class InstructorView extends BaseView{
         return topFooter;
     }
 
-    private HorizontalLayout createTopBar() {
-        // Implementation of createTopBar method
-        return new HorizontalLayout();
-    }
 }
