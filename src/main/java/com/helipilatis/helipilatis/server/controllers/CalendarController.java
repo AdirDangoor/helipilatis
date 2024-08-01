@@ -22,6 +22,7 @@ public class CalendarController {
 
     @GetMapping("/classes")
     public List<PilatisClass> getAllActiveClasses() {
+        logger.info("[FUNCTION-CalendarController-getAllActiveClasses]");
         return calendarService.getAllActiveClasses();
     }
 

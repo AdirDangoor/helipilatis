@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class UserView extends BaseView {
     private Tabs dateTabs;
     private VerticalLayout classesContainer;
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
 
     @Autowired
@@ -117,6 +119,8 @@ public class UserView extends BaseView {
         dateTabs = new Tabs();
         dateTabs.setWidthFull();
         dateTabs.getStyle().set("overflow-x", "auto");
+        dateTabs.getStyle().set("background-color", "rgba(255, 255, 255, 0.8)"); // Set transparent white background
+
     }
 
     private void initializeClassesContainer() {
@@ -128,17 +132,25 @@ public class UserView extends BaseView {
 
     private void addDateTabs(Stream<LocalDate> sortedDates, Map<LocalDate, List<PilatisClass>> groupedByDate) {
         sortedDates.forEach(date -> {
-            List<PilatisClass> items = groupedByDate.get(date);
-            Tab dateTab = new Tab(date.toString());
+            // Get the day name
+            String dayName = date.getDayOfWeek().toString(); // Example: MONDAY
+            String formattedDayName = dayName.substring(0, 1) + dayName.substring(1).toLowerCase(); // Capitalize first letter
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")); // Format date
+            String tabLabel = formattedDate + " (" + formattedDayName + ")";
+
+            // Create tab for each day
+            Tab dateTab = new Tab(tabLabel);
             dateTab.getElement().getStyle().set("padding", "0.5em 1em");
             dateTabs.add(dateTab);
         });
 
         dateTabs.addSelectedChangeListener(event -> {
+            logger.info("Selected tab: " + dateTabs.getSelectedTab().getLabel());
             classesContainer.removeAll();
             Tab selectedTab = dateTabs.getSelectedTab();
-            String selectedDate = selectedTab.getLabel();
-            LocalDate date = LocalDate.parse(selectedDate);
+            String selectedLabel = selectedTab.getLabel();
+            String selectedDate = selectedLabel.split(" ")[0]; // Extract the date part
+            LocalDate date = LocalDate.parse(selectedDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
             List<PilatisClass> items = groupedByDate.get(date);
             VerticalLayout dayClasses = createDayClasses(items);
             classesContainer.add(dayClasses);
@@ -254,10 +266,40 @@ public class UserView extends BaseView {
         Image logo = new Image("images/logo.png", "Logo"); // Replace with your logo path
         logo.setHeight("50px");
 
+        // Create a layout for the buttons
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setSpacing(true);
+
         // Add shop button
         Button shopButton = new Button("Shop", event -> getUI().ifPresent(ui -> ui.navigate("shop")));
+        shopButton.getStyle()
+                .set("background-color", "#007BFF")
+                .set("color", "white");
 
-        topFooter.add(logo, shopButton);
+        // Add "My Classes" button
+        Button myClassesButton = new Button("My Classes", event -> {
+            getCurrentUserId(userId -> {
+                if (userId != null) {
+                    // Navigate to a page to display the user's classes or make an API call to fetch classes
+                    getUI().ifPresent(ui -> ui.navigate("my-classes"));
+                } else {
+                    Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+                }
+            });
+        });
+        myClassesButton.getStyle()
+                .set("background-color", "#007BFF")
+                .set("color", "white");
+
+        // Add buttons to the button layout
+        buttonLayout.add(shopButton, myClassesButton);
+
+        // Add logo and button layout to the top footer
+        topFooter.add(logo, buttonLayout);
+        topFooter.setFlexGrow(0, logo);
+        topFooter.setFlexGrow(0, buttonLayout);
+        topFooter.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+
         return topFooter;
     }
 

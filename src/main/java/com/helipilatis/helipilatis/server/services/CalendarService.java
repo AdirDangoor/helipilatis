@@ -91,6 +91,7 @@ public class CalendarService {
     }
 
     public List<PilatisClass> getAllActiveClasses() {
+        logger.info("Getting all active classes");
         return calendarRepository.findAll().stream()
                 .filter(pilatisClass -> !pilatisClass.isCanceled())
                 .collect(Collectors.toList());
