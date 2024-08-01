@@ -1,0 +1,3 @@
+2024-08-01 20:26:34.939679+03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERSINSTRUCTORS" not found; SQL statement:
+DROP TABLE USERSINSTRUCTORS [42102-224]
