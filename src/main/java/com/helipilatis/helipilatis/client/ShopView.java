@@ -1,24 +1,23 @@
 package com.helipilatis.helipilatis.client;
 
-import com.helipilatis.helipilatis.server.requests.LoginRequest;
-import com.helipilatis.helipilatis.server.requests.Ticket1Request;
-
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.dom.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
 @Route("shop")
-public class ShopView extends VerticalLayout {
+public class ShopView extends BaseView {
 
         @Autowired
         private RestTemplate restTemplate;
@@ -85,58 +84,43 @@ public class ShopView extends VerticalLayout {
                 title.addClassName("shop-title");
 
                 // Buttons for navigation
-                Button ticket1 = new Button("Buy 1 Ticket (80₪)", event -> {
-                        Ticket1Request ticket1Request = new Ticket1Request();
-                        String url = "http://localhost:8080/api/shop";
-                        ResponseEntity<String> response = restTemplate.postForEntity(url, ticket1Request, String.class);
+                Button ticket1 = new Button("Buy 1 Ticket (80₪)", event -> purchaseTicket(1));
+
+                // Add components to the container
+                contentContainer.add(title, ticket1);
+
+                // Add the container to the main layout
+                add(contentContainer);
+        }
+
+
+        private void purchaseTicket(int numberOfTickets) {
+                getCurrentUserId(userId -> {
+                        if (userId == null) {
+                                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+                                return;
+                        }
+
+                        String url = "http://localhost:8080/api/shop/purchaseTicket?userId=" + userId + "&ticket=" + numberOfTickets;
+                        ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
 
                         if (response.getStatusCode() == HttpStatus.OK) {
-                                Notification.show("Purchased 1 ticket successfully");
-                                //getUI().ifPresent(ui -> ui.navigate("user"));
+                                Notification.show("Purchased " + numberOfTickets + " ticket(s) successfully");
                         } else {
                                 Notification.show("Purchase failed", 3000, Notification.Position.MIDDLE);
                         }
                 });
-
-
-                        //createStyledButton("Buy 1 Ticket (80₪)", 1);
-//                Button ticket10 = createStyledButton("Buy 10 Tickets (700₪)", 10);
-//                Button ticket20 = createStyledButton("Buy 20 Tickets (1300₪)", 20);
-//                Button ticket30 = createStyledButton("Buy 30 Tickets (2000₪)", 30);
-                //Button ticketPrivate = createStyledButton("Buy 10 Tickets for private session (1300₪)", 10);
-                //Button ticketInstructors15 = createStyledButton("Buy 15 Tickets for instructors (1300₪)", 15);
-                //Button ticketInstructors30 = createStyledButton("Buy 15 Tickets for instructors (1300₪)", 15);
-
-                // Add components to the container
-                contentContainer.add(title, ticket1); //, ticket10, ticket20, ticket30);
-
-                // Add the container to the main layout
-                add(contentContainer);
-
-
-//                  ticket1.addClickListener(event -> {
-//                          Ticket1Request ticket1Request = new Ticket1Request();
-//                          String url = "http://localhost:8080/api/shop";
-//                          ResponseEntity<String> response = restTemplate.postForEntity(url, ticket1Request, String.class);
-//
-//                          if (response.getStatusCode() == HttpStatus.OK) {
-//                                  Notification.show("User Got 1 ticket successfully");
-//                                  //getUI().ifPresent(ui -> ui.navigate("user"));
-//                          }
-//                          else {
-//                                  Notification.show("Purchase failed", 3000, Notification.Position.MIDDLE);
-//                          }
-//                  });
-
         }
 
-
-//        private Button createStyledButton(String text, int numberOfTickets) {
-//                Object ShopService;
-//                Button button = new Button(text, event -> ShopService.clientBoughtTicket(numberOfTickets));
-//
-//                button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//                button.addClassName("shop-button");
-//                return button;
-//        }
+        private void getCurrentUserId(Consumer<Long> callback) {
+                VaadinSession session = VaadinSession.getCurrent();
+                if (session != null) {
+                        Long userId = (Long) session.getAttribute("userId");
+                        logger.info("userId: " + userId);
+                        callback.accept(userId);
+                } else {
+                        logger.severe("VaadinSession is null");
+                        callback.accept(null);
+                }
+        }
 }

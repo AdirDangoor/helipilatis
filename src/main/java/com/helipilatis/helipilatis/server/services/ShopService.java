@@ -1,21 +1,31 @@
 package com.helipilatis.helipilatis.server.services;
-
-import com.helipilatis.helipilatis.databaseModels.Ticket;
-import com.helipilatis.helipilatis.server.requests.Ticket1Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.helipilatis.helipilatis.databaseModels.*;
+import java.util.logging.Logger;
 
 @Service
 public class ShopService {
 
+    private final UserRepository userRepository;
+    private static final java.util.logging.Logger logger = Logger.getLogger("ShopService");
+
     @Autowired
-    public void purchaseTicket(Ticket1Request ticket1Request) {
-        // Get the ticket count from the request
-        int ticketNum = ticket1Request.getTicketNum();
+    public ShopService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-        // Print a message indicating that the client bought 1 ticket
-        System.out.println("Client bought " + 1 + " ticket(s).");
+    public void purchaseTicket(Long userId, int ticket) {
+        // Find the user by ID
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Additional logic could go here, such as checking availability, deducting from inventory, or saving the purchase to a database
+        // Update the user's ticket count
+        user.setTickets(user.getTickets() + ticket);
+
+        // Save the updated user back to the database
+        userRepository.save(user);
+
+        // Print a message indicating that the client bought tickets
+        logger.info("Client with userId " + userId + " bought " + ticket + " ticket(s).");
     }
 }

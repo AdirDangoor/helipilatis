@@ -18,7 +18,7 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
-    private static final Logger logger = Logger.getLogger(AuthController.class.getName());
+    private static final Logger logger = Logger.getLogger("AuthController");
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpSession session) {

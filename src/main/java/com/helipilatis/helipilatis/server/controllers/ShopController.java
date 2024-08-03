@@ -1,17 +1,10 @@
 package com.helipilatis.helipilatis.server.controllers;
-import com.helipilatis.helipilatis.server.requests.Ticket1Request;
-import com.helipilatis.helipilatis.client.ShopView;
-import com.helipilatis.helipilatis.server.requests.LoginRequest;
-import com.helipilatis.helipilatis.server.requests.RegisterRequest;
-import com.helipilatis.helipilatis.server.services.AuthService;
 import com.helipilatis.helipilatis.server.services.ShopService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.logging.Logger;
 
 
@@ -27,12 +20,12 @@ public class ShopController {
         this.shopService = shopService;
     }
 
-    @PostMapping
-    public ResponseEntity<String> purchaseTicket(@RequestBody Ticket1Request ticket1Request) {
+    @PostMapping("/purchaseTicket")
+    public ResponseEntity<String> purchaseTicket(@RequestParam Long userId, @RequestParam int ticket) {
         try {
             // Call the service to process the ticket purchase
-            shopService.purchaseTicket(ticket1Request);
-            logger.info("Ticket purchased successfully. Ticket count: " + ticket1Request.getTicketNum());
+            shopService.purchaseTicket(userId, ticket);
+            logger.info("Ticket purchased successfully. User ID: " + userId + ", Ticket count: " + ticket);
             return ResponseEntity.ok("Ticket purchased successfully");
         } catch (Exception e) {
             logger.warning("Error purchasing ticket: " + e.getMessage());

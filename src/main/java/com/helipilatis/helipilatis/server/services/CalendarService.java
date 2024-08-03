@@ -147,29 +147,47 @@ public class CalendarService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        if (user.getTickets() <= 0) {
+            throw new IllegalStateException("User does not have enough tickets");
+        }
+
         List<User> signedUsers = pilatisClass.getSignedUsers();
         if (!signedUsers.contains(user)) {
             signedUsers.add(user);
             pilatisClass.setSignedUsers(signedUsers);
+            user.setTickets(user.getTickets() - 1);
+            userRepository.save(user);
             calendarRepository.save(pilatisClass);
         }
     }
 
 
-    public void cancelClassAsInstructor(Long classId, Long userId) {
+
+    public void cancelClassAsUser(Long classId, Long userId) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         pilatisClass.getSignedUsers().remove(user);
+        user.setTickets(user.getTickets() + 1);
+        userRepository.save(user);
         calendarRepository.save(pilatisClass);
     }
 
 
     public boolean cancelClassAsInstructor(Long classId) {
-        try {
-            PilatisClass pilatisClass = calendarRepository.findById(classId).orElseThrow();
+        try{
+            PilatisClass pilatisClass = calendarRepository.findById(classId)
+                    .orElseThrow(() -> new RuntimeException("Class not found"));
+
+            List<User> signedUsers = pilatisClass.getSignedUsers();
+            for (User user : signedUsers) {
+                user.setTickets(user.getTickets() + 1);
+                userRepository.save(user);
+            }
+
+            pilatisClass.getSignedUsers().clear();
             pilatisClass.setCanceled(true);
             calendarRepository.save(pilatisClass);
             return true;

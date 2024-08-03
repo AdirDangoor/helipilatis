@@ -1,6 +1,5 @@
 package com.helipilatis.helipilatis.server.controllers;
 
-import com.helipilatis.helipilatis.client.UserView;
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
 import com.helipilatis.helipilatis.server.services.CalendarService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/calendar")
 public class CalendarController {
 
-    private static final Logger logger = Logger.getLogger(UserView.class.getName());
+    private static final Logger logger = Logger.getLogger("CalendarController");
 
     @Autowired
     private CalendarService calendarService;
@@ -65,7 +64,7 @@ public class CalendarController {
     @PostMapping("/classes/{classId}/cancel")
     public ResponseEntity<String> cancelClass(@PathVariable Long classId, @RequestParam Long userId) {
         try {
-            calendarService.cancelClassAsInstructor(classId, userId);
+            calendarService.cancelClassAsUser(classId, userId);
             return ResponseEntity.ok("Class cancelled successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error cancelling class: " + e.getMessage());
@@ -111,14 +110,3 @@ public class CalendarController {
     }
 
 }
-
-//sign to class from client method
-//front need to send api request - api/
-//calendar send request to sign to classController
-
-//instructor create a pilates class inside the database calendar
-
-
-//instructor delete pilates class
-
-//
