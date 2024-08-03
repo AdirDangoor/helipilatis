@@ -109,4 +109,14 @@ public class CalendarController {
         }
     }
 
+    @GetMapping("/instructor/{classId}/users")
+    public ResponseEntity<List<String>> getUserNamesForClass(@PathVariable Long classId) {
+        try {
+            List<String> userNames = calendarService.getUserNamesForClass(classId);
+            return ResponseEntity.ok(userNames);
+        } catch (Exception e) {
+            logger.severe("Unknown content type: " + e.getMessage());
+            return ResponseEntity.status(415).body(List.of("Unsupported content type"));
+        }
+    }
 }

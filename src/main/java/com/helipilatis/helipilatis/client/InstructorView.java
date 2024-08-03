@@ -1,14 +1,18 @@
 package com.helipilatis.helipilatis.client;
 
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
@@ -24,9 +28,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.html.Div;
 
 @Route("instructor")
-public class InstructorView extends BaseView{
+public class InstructorView extends BaseView {
 
     private Tabs dateTabs;
 
@@ -134,6 +140,10 @@ public class InstructorView extends BaseView{
         }
     }
 
+    private void displayUserNamesForClass(Long classId) {
+       logger.info("Displaying user names for class " + classId);
+    }
+
     private VerticalLayout createDayClasses(List<PilatisClass> items) {
         VerticalLayout dayClasses = new VerticalLayout();
         dayClasses.setPadding(true);
@@ -144,9 +154,34 @@ public class InstructorView extends BaseView{
         grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
         grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
         grid.addComponentColumn(this::createBookButton).setHeader("");
+        grid.addComponentColumn(pilatisClass -> {
+            Details details = new Details();
+            details.setSummaryText("User Names");
+            details.setOpened(false);
+            details.setSummary(new Div(new Text("User Names")));
+            details.add(createUserNamesLayout(pilatisClass.getId()));
+            return details;
+        }).setHeader("");
         grid.setItems(items);
         dayClasses.add(grid);
         return dayClasses;
+    }
+
+    private Div createUserNamesLayout(Long classId) {
+        Div userNamesLayout = new Div();
+        List<String> userNames = fetchUserNames(classId);
+        for (String userName : userNames) {
+            Div userNameDiv = new Div();
+            userNameDiv.setText(userName);
+            userNamesLayout.add(userNameDiv);
+        }
+        return userNamesLayout;
+    }
+    private List<String> fetchUserNames(Long classId) {
+        String url = "http://localhost:8080/api/calendar/instructor/" + classId + "/users";
+        ResponseEntity<String[]> response = restTemplate.getForEntity(url, String[].class);
+        logger.info("fetchUserNames API response : " + Arrays.toString(response.getBody()));
+        return List.of(response.getBody());
     }
 
     private Button createBookButton(PilatisClass pilatisClass) {

@@ -209,6 +209,12 @@ public class CalendarService {
     }
 
 
+    public List<String> getUserNamesForClass(Long classId) {
+        PilatisClass pilatisClass = calendarRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+        return pilatisClass.getSignedUsers().stream().map(User::getName).collect(Collectors.toList());
+    }
+
     public void sendMessageToClassClients(Long classId, String message) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));
