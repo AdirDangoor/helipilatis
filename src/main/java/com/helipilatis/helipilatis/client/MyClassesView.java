@@ -101,10 +101,12 @@ public class MyClassesView extends BaseView {
                             refreshClassesContainer(); // Refresh classes instead of reloading the page
                         } else {
                             Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
+                            refreshClassesContainer();
                         }
                     } catch (Exception ex) {
                         logger.severe("Error cancelling class: " + ex.getMessage());
                         Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
+                        refreshClassesContainer();
                     }
                 } else {
                     Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);

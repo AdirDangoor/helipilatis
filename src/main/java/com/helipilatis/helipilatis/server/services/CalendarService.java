@@ -166,6 +166,10 @@ public class CalendarService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (!pilatisClass.getSignedUsers().contains(user)) {
+            throw new RuntimeException("User not signed up for this class");
+        }
+
         pilatisClass.getSignedUsers().remove(user);
         user.setTickets(user.getTickets() + 1);
         userRepository.save(user);
