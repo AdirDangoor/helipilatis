@@ -46,10 +46,17 @@ public class CalendarController {
     public ResponseEntity<String> signUpForClass(@PathVariable Long classId, @RequestParam Long userId) {
         logger.info("Signing up for class " + classId + " with user " + userId);
         try {
+            PilatisClass pilatisClass = calendarService.getClassById(classId);
+            if (pilatisClass.isCanceled()) {
+                return ResponseEntity.status(409).body("Class is canceled and cannot be booked");
+            }
+            if (pilatisClass.getSignedUsers().size() >= pilatisClass.getMaxParticipants()) {
+                return ResponseEntity.status(409).body("Class is full and cannot be booked");
+            }
             calendarService.signUpForClass(classId, userId);
             return ResponseEntity.ok("Successfully booked");
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(409).body("Class is full");
+            return ResponseEntity.status(409).body("Error booking class: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error booking class");
         }

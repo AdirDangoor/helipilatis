@@ -226,7 +226,9 @@ public class UserView extends BaseView {
                             Notification.show("Successfully booked", 3000, Notification.Position.MIDDLE);
                             UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
                         } else {
-                            Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
+                            String errorMessage = response.getBody();
+                            Notification.show("Error booking class: " + errorMessage, 3000, Notification.Position.MIDDLE);
+                            refreshClassesContainer();
                         }
                     } catch (Exception ex) {
                         logger.severe("Error booking class: " + ex.getMessage());
@@ -247,8 +249,9 @@ public class UserView extends BaseView {
     private void refreshClassesContainer() {
         classesContainer.removeAll();
         Tab selectedTab = dateTabs.getSelectedTab();
-        String selectedDate = selectedTab.getLabel();
-        LocalDate date = LocalDate.parse(selectedDate);
+        String selectedLabel = selectedTab.getLabel();
+        String selectedDate = selectedLabel.split(" ")[0]; // Extract the date part
+        LocalDate date = LocalDate.parse(selectedDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         List<PilatisClass> items = fetchPilatisClasses().stream()
                 .filter(pilatisClass -> pilatisClass.getDate().equals(date))
                 .collect(Collectors.toList());

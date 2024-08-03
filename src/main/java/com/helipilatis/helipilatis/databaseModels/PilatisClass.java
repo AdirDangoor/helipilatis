@@ -120,4 +120,19 @@ public class PilatisClass {
     public void setCanceled(boolean canceled) {
         this.canceled = canceled;
     }
+
+    @Override
+    public String toString() {
+        return "PilatisClass{" +
+                "id=" + id +
+                ", date=" + date +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", maxParticipants=" + maxParticipants +
+                ", canceled=" + canceled +
+                ", instructorId=" + instructorId +
+                ", instructor=" + instructor +
+                ", signedUsers=" + signedUsers +
+                '}';
+    }
 }

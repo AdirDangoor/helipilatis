@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
+
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -20,6 +22,9 @@ public class CalendarService {
 
     @Autowired
     private CalendarRepository calendarRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private CalendarMetadataRepository calendarMetadataRepository;
@@ -39,14 +44,22 @@ public class CalendarService {
             logger.info("Initializing calendar");
             LocalDate today = LocalDate.now();
             LocalDate endDate = today.plusWeeks(4);
+            LocalDate yesterday = today.minusDays(1);
+            logger.info("Today: " + today + ", end date: " + endDate + ", yesterday: " + yesterday);
+            // Remove all classes with dates that have passed
+            List<PilatisClass> pastClasses = calendarRepository.findClassesByDateRangeWithSignedUsers(today.minusWeeks(1), yesterday);
+            logger.info("Past classes: " + pastClasses);
 
-            List<PilatisClass> existingEntries = calendarRepository.findClassesByDateRange(today, endDate);
-            if (!existingEntries.isEmpty()) {
-                return;
+            if (!pastClasses.isEmpty()) {
+                calendarRepository.deleteAll(pastClasses);
+                logger.info("Removed past classes: " + pastClasses.size());
             }
 
-            CalendarMetadata metadata = calendarMetadataRepository.findById(1L).orElse(new CalendarMetadata(1L, today.minusDays(1)));
-            if (!metadata.getLastInitializationDate().isBefore(today)) {
+            LocalDate llastClassDate = calendarRepository.findLastClassDate().orElse(today.minusDays(1));
+            logger.info("Last class date: " + llastClassDate);
+            // Fetch the last class date
+            LocalDate lastClassDate = calendarRepository.findLastClassDate().orElse(today.minusDays(1));
+            if (!lastClassDate.isBefore(endDate)) {
                 return;
             }
 
@@ -56,7 +69,8 @@ public class CalendarService {
             LocalTime startTime = LocalTime.of(9, 0);
             LocalTime endTime = LocalTime.of(17, 0);
 
-            for (LocalDate date = today; date.isBefore(endDate); date = date.plusDays(1)) {
+            // Add new classes to fill the gap
+            for (LocalDate date = lastClassDate.plusDays(1); date.isBefore(endDate); date = date.plusDays(1)) {
                 DayOfWeek day = date.getDayOfWeek();
                 if (day != DayOfWeek.FRIDAY && day != DayOfWeek.SATURDAY) {
                     for (int hour = startTime.getHour(); hour < endTime.getHour(); hour++) {
@@ -75,8 +89,6 @@ public class CalendarService {
             logger.info("Saving calendar entries: " + calendarEntries.size());
 
             calendarRepository.saveAll(calendarEntries);
-            metadata.setLastInitializationDate(today);
-            calendarMetadataRepository.save(metadata);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -114,9 +126,15 @@ public class CalendarService {
         return calendarRepository.findClassesByUserId(userId);
     }
 
-    @Autowired
-    private UserRepository userRepository;
 
+    public PilatisClass getClassById(Long classId) {
+        Optional<PilatisClass> optionalClass = calendarRepository.findById(classId);
+        if (optionalClass.isPresent()) {
+            return optionalClass.get();
+        } else {
+            throw new IllegalArgumentException("Class not found with id: " + classId);
+        }
+    }
 
     public void signUpForClass(Long classId, Long userId) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)

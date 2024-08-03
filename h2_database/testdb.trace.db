@@ -1,3 +1,9 @@
 2024-08-01 20:26:34.939679+03:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERSINSTRUCTORS" not found; SQL statement:
 DROP TABLE USERSINSTRUCTORS [42102-224]
+2024-08-03 14:33:59.792244+03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PILATISCLASS" not found; SQL statement:
+SELECT c FROM PilatisClass c WHERE c.date >= :startDate AND c.date <= :endDate [42102-224]
+2024-08-03 14:41:22.220892+03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PILATISCLASS" not found; SQL statement:
+SELECT c FROM PilatisClass c WHERE c.date < CURRENT_DATE [42102-224]
