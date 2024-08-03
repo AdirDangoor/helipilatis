@@ -4,6 +4,7 @@ import com.helipilatis.helipilatis.databaseModels.PilatisClass;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,15 +24,22 @@ public class MyClassesView extends BaseView {
 
     private final RestTemplate restTemplate;
     private final Logger logger = Logger.getLogger(MyClassesView.class.getName());
-    private VerticalLayout classesContainer;
+    private Div contentBox;
 
     @Autowired
     public MyClassesView(RestTemplate restTemplate) {
         logger.info("[FUNCTION] MyClassesView constructor");
         this.restTemplate = restTemplate;
         setSizeFull();
-        setAlignItems(Alignment.STRETCH);
-        setJustifyContentMode(JustifyContentMode.START);
+        setAlignItems(Alignment.CENTER);
+        setJustifyContentMode(JustifyContentMode.CENTER);
+
+        // Set full-page background image
+        String imagePath = "images/shop_background.jpg"; // Replace with your image path
+        getElement().getStyle()
+                .set("background-image", "url('" + imagePath + "')")
+                .set("background-size", "cover")
+                .set("background-position", "center");
 
         // Check if the user is an instructor
         VaadinSession session = VaadinSession.getCurrent();
@@ -44,16 +52,31 @@ public class MyClassesView extends BaseView {
             }
         }
 
+        // Add content box
+        contentBox = new Div();
+        contentBox.getStyle()
+                .set("width", "600px")
+                .set("max-width", "100%")
+                .set("padding", "20px")
+                .set("border-radius", "8px")
+                .set("background-color", "rgba(173, 216, 230, 0.5)") // Transparent light blue
+                .set("color", "black") // Text color for the box
+                .set("text-align", "center"); // Center text horizontally
+        add(contentBox);
+
         // Add header
         H1 header = new H1("My Classes");
-        add(header);
+        header.getStyle()
+                .set("color", "white") // Title color
+                .set("margin", "0"); // Remove default margin
+        contentBox.add(header);
 
         // Initialize classes container
-        classesContainer = new VerticalLayout();
+        VerticalLayout classesContainer = new VerticalLayout();
         classesContainer.setPadding(true);
         classesContainer.setSpacing(true);
         classesContainer.setWidthFull();
-        add(classesContainer);
+        contentBox.add(classesContainer);
 
         // Fetch and display the user's classes
         displayUserClasses();
@@ -66,17 +89,39 @@ public class MyClassesView extends BaseView {
                 return;
             }
             List<PilatisClass> userClasses = fetchUserClasses(userId);
-            Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
-            grid.addColumn(PilatisClass::getDate).setHeader("Date");
-            grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
-            grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
-            grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
-            grid.addComponentColumn(this::createCancelButton).setHeader("");
+            contentBox.removeAll(); // Clear previous content
 
-            grid.setItems(userClasses);
-            classesContainer.add(grid);
+            H1 header = new H1("My Classes");
+            header.getStyle()
+                    .set("color", "white") // Title color
+                    .set("margin", "0"); // Remove default margin
+            contentBox.add(header);
+
+            if (userClasses.isEmpty()) {
+                // Display a message if there are no classes
+                Div message = new Div();
+                message.setText("You are not registered for any classes yet...");
+                message.getStyle()
+                        .set("color", "black")
+                        .set("font-size", "20px")
+                        .set("text-align", "center")
+                        .set("margin-top", "20px");
+                contentBox.add(message);
+            } else {
+                // Display the classes in a grid
+                Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
+                grid.addColumn(PilatisClass::getDate).setHeader("Date");
+                grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
+                grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
+                grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
+                grid.addComponentColumn(this::createCancelButton).setHeader("");
+
+                grid.setItems(userClasses);
+                contentBox.add(grid);
+            }
         });
     }
+
 
     private List<PilatisClass> fetchUserClasses(Long userId) {
         String url = "http://localhost:8080/api/calendar/user-classes/" + userId; // Replace with your actual API endpoint
@@ -130,7 +175,12 @@ public class MyClassesView extends BaseView {
                 return;
             }
             List<PilatisClass> userClasses = fetchUserClasses(userId);
-            classesContainer.removeAll();
+            contentBox.removeAll();
+            H1 header = new H1("My Classes");
+            header.getStyle()
+                    .set("color", "white") // Title color
+                    .set("margin", "0"); // Remove default margin
+            contentBox.add(header);
             Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
             grid.addColumn(PilatisClass::getDate).setHeader("Date");
             grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
@@ -139,7 +189,7 @@ public class MyClassesView extends BaseView {
             grid.addComponentColumn(this::createCancelButton).setHeader("");
 
             grid.setItems(userClasses);
-            classesContainer.add(grid);
+            contentBox.add(grid);
         });
     }
 
@@ -154,4 +204,5 @@ public class MyClassesView extends BaseView {
             callback.accept(null);
         }
     }
+
 }
