@@ -1,7 +1,6 @@
 package com.helipilatis.helipilatis.client;
 
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -10,13 +9,10 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.server.VaadinSession;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -38,10 +34,6 @@ public class UserView extends BaseView {
     private VerticalLayout classesContainer;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-
-    @Autowired
-    private HttpSession session;
 
     public UserView(RestTemplate restTemplate) {
         super();
@@ -227,7 +219,7 @@ public class UserView extends BaseView {
                 button.setText("Cancel Class");
                 button.addClickListener(e -> {
                     try {
-                        ResponseEntity<String> response = apiRequests.cancelClassForUser(pilatisClass.getId(), userId);
+                        ResponseEntity<String> response = apiRequests.userCancelClass(pilatisClass.getId(), userId);
 
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
@@ -244,7 +236,7 @@ public class UserView extends BaseView {
                 button.setText("Book Class");
                 button.addClickListener(e -> {
                     try {
-                        ResponseEntity<String> response = apiRequests.bookClass(pilatisClass.getId(), userId);
+                        ResponseEntity<String> response = apiRequests.userBookClass(pilatisClass.getId(), userId);
 
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully booked, bought with 1 ticket", 3000, Notification.Position.MIDDLE);

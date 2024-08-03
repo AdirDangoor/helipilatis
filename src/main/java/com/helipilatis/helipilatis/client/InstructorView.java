@@ -2,7 +2,6 @@ package com.helipilatis.helipilatis.client;
 
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.grid.Grid;
@@ -11,8 +10,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
@@ -29,7 +26,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.vaadin.flow.component.details.Details;
+
 import com.vaadin.flow.component.html.Div;
 
 @Route("instructor")
@@ -215,7 +212,7 @@ public class InstructorView extends BaseView {
                             Tab selectedTab = dateTabs.getSelectedTab();
                             session.setAttribute("selectedDate", selectedTab.getLabel());
                         }
-                        ResponseEntity<String> response = apiRequests.restoreClassAsInstructor(pilatisClass.getId());
+                        ResponseEntity<String> response = apiRequests.instructorRestoreClass(pilatisClass.getId());
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully restored", 3000, Notification.Position.MIDDLE);
                             refreshClassesContainer();
@@ -236,7 +233,7 @@ public class InstructorView extends BaseView {
                             Tab selectedTab = dateTabs.getSelectedTab();
                             session.setAttribute("selectedDate", selectedTab.getLabel());
                         }
-                        ResponseEntity<String> response = apiRequests.cancelClassAsInstructor(pilatisClass.getId());
+                        ResponseEntity<String> response = apiRequests.instructorCancelClass(pilatisClass.getId());
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
                             refreshClassesContainer();

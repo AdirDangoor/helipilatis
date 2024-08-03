@@ -1,7 +1,6 @@
 package com.helipilatis.helipilatis.client;
 
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
@@ -94,7 +93,7 @@ public class MyClassesView extends BaseView {
                 Long userId = (Long) session.getAttribute("userId");
                 if (userId != null) {
                     try {
-                        ResponseEntity<String> response = apiRequests.cancelClassForUser(pilatisClass.getId(), userId);
+                        ResponseEntity<String> response = apiRequests.userCancelClass(pilatisClass.getId(), userId);
 
                         if (response.getStatusCode().is2xxSuccessful()) {
                             Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);

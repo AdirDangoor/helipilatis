@@ -20,9 +20,6 @@ import java.util.logging.Logger;
 @Route("shop")
 public class ShopView extends BaseView {
 
-        private final RestTemplate restTemplate;
-        private static final Logger logger = Logger.getLogger(ShopView.class.getName());
-
         public ShopView(RestTemplate restTemplate) {
                 super();
                 this.restTemplate = restTemplate;
@@ -132,9 +129,8 @@ public class ShopView extends BaseView {
                                 return;
                         }
 
-                        String url = "http://localhost:8080/api/shop/purchaseTicket?userId=" + userId + "&ticketTypeId=" + ticketTypeId;
-                        ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
-
+                        ResponseEntity<String> response = apiRequests.purchaseTicket(userId, ticketTypeId);
+                        
                         if (response.getStatusCode() == HttpStatus.OK) {
                                 Notification.show("Purchased ticket successfully");
                         } else {
