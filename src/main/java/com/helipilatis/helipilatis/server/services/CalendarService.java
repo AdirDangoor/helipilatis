@@ -1,6 +1,7 @@
 package com.helipilatis.helipilatis.server.services;
 
 import com.helipilatis.helipilatis.databaseModels.*;
+import com.helipilatis.helipilatis.server.ServerExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -133,7 +134,7 @@ public class CalendarService {
         }
     }
 
-    public void signUpForClass(Long classId, Long userId) {
+    public void signUpForClass(Long classId, Long userId) throws ServerExceptions.NotEnoughTicketsException {
         PilatisClass pilatisClass = calendarRepository.findById(classId)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));
 
@@ -145,7 +146,7 @@ public class CalendarService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (user.getTickets() <= 0) {
-            throw new IllegalStateException("User does not have enough tickets");
+            throw new ServerExceptions.NotEnoughTicketsException("User does not have enough tickets");
         }
 
         List<User> signedUsers = pilatisClass.getSignedUsers();

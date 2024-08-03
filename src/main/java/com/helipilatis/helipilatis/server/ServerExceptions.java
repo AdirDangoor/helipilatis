@@ -14,5 +14,12 @@ public class ServerExceptions {
         }
     }
 
+    // not enough tickets
+    public static class NotEnoughTicketsException extends Exception {
+        public NotEnoughTicketsException(String message) {
+            super(message);
+        }
+    }
+
     // Add other custom exceptions here as needed
 }

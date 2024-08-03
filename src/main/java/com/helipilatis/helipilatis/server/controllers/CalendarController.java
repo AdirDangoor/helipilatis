@@ -1,6 +1,7 @@
 package com.helipilatis.helipilatis.server.controllers;
 
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
+import com.helipilatis.helipilatis.server.ServerExceptions;
 import com.helipilatis.helipilatis.server.services.CalendarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,8 +55,8 @@ public class CalendarController {
             }
             calendarService.signUpForClass(classId, userId);
             return ResponseEntity.ok("Successfully booked");
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(409).body("Error booking class: " + e.getMessage());
+        }catch (ServerExceptions.NotEnoughTicketsException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error booking class");
         }

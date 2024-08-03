@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +63,7 @@ public class UserView extends BaseView {
         mainLayout.add(topFooter);
         displaySchedule(mainLayout);
         add(mainLayout);
+        refreshClassesContainer();
     }
 
     private void setBackground() {
@@ -189,7 +191,12 @@ public class UserView extends BaseView {
         dayClasses.getStyle().set("padding", "1em");
 
         Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
-        grid.addColumn(PilatisClass::getStartTime).setHeader("Time").setAutoWidth(true);
+        grid.addColumn(pilatisClass -> {
+            LocalTime startTime = pilatisClass.getStartTime();
+            LocalTime endTime = startTime.plusHours(1);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            return startTime.format(formatter) + " - " + endTime.format(formatter);
+        }).setHeader("Time").setAutoWidth(true);
         grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor").setAutoWidth(true);
         grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants").setAutoWidth(true);
         grid.addComponentColumn(this::createBookButton).setHeader("").setAutoWidth(true);
@@ -217,7 +224,7 @@ public class UserView extends BaseView {
                     .anyMatch(user -> user.getId().equals(userId));
 
             if (isBooked) {
-                button.setText("CANCEL");
+                button.setText("Cancel Class");
                 button.addClickListener(e -> {
                     try {
                         ResponseEntity<String> response = apiRequests.cancelClassForUser(pilatisClass.getId(), userId);
@@ -234,13 +241,13 @@ public class UserView extends BaseView {
                     }
                 });
             } else {
-                button.setText("BOOK VIRTUAL");
+                button.setText("Book Class");
                 button.addClickListener(e -> {
                     try {
                         ResponseEntity<String> response = apiRequests.bookClass(pilatisClass.getId(), userId);
 
                         if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully booked", 3000, Notification.Position.MIDDLE);
+                            Notification.show("Successfully booked, bought with 1 ticket", 3000, Notification.Position.MIDDLE);
                             UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
                         } else {
                             String errorMessage = response.getBody();
