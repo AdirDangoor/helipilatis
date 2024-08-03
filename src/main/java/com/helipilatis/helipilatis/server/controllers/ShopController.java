@@ -1,10 +1,12 @@
 package com.helipilatis.helipilatis.server.controllers;
+import com.helipilatis.helipilatis.databaseModels.TicketType;
 import com.helipilatis.helipilatis.server.services.ShopService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 
@@ -20,12 +22,20 @@ public class ShopController {
         this.shopService = shopService;
     }
 
+    @GetMapping("/ticketTypes")
+    public ResponseEntity<List<TicketType>> getAllTicketTypes() {
+        List<TicketType> ticketTypes = shopService.getAllTicketTypes();
+
+        return ResponseEntity.ok(ticketTypes);
+    }
+
+
     @PostMapping("/purchaseTicket")
-    public ResponseEntity<String> purchaseTicket(@RequestParam Long userId, @RequestParam int ticket) {
+    public ResponseEntity<String> purchaseTicket(@RequestParam Long userId, @RequestParam Long ticketTypeId) {
         try {
             // Call the service to process the ticket purchase
-            shopService.purchaseTicket(userId, ticket);
-            logger.info("Ticket purchased successfully. User ID: " + userId + ", Ticket count: " + ticket);
+            shopService.purchaseTicket(userId, ticketTypeId);
+            logger.info("Ticket purchased successfully. User ID: " + userId + ", Ticket Type ID: " + ticketTypeId);
             return ResponseEntity.ok("Ticket purchased successfully");
         } catch (Exception e) {
             logger.warning("Error purchasing ticket: " + e.getMessage());

@@ -4,25 +4,32 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.helipilatis.helipilatis.databaseModels.TicketType;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.dom.Element;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 @Route("shop")
 public class ShopView extends BaseView {
 
-        @Autowired
-        private RestTemplate restTemplate;
+        private final RestTemplate restTemplate;
+        private static final Logger logger = Logger.getLogger(ShopView.class.getName());
 
-        public ShopView() {
+        public ShopView(RestTemplate restTemplate) {
+                super();
+                this.restTemplate = restTemplate;
+                initializeView();
+        }
+
+        public void initializeView() {
                 // Set up the main layout
                 setSizeFull();
                 setAlignItems(Alignment.CENTER);
@@ -83,29 +90,53 @@ public class ShopView extends BaseView {
                 H1 title = new H1("Welcome to Tickets Shop");
                 title.addClassName("shop-title");
 
-                // Buttons for navigation
-                Button ticket1 = new Button("Buy 1 Ticket (80₪)", event -> purchaseTicket(1));
-
                 // Add components to the container
-                contentContainer.add(title, ticket1);
+                contentContainer.add(title);
+
+                // Fetch and display ticket types
+                List<TicketType> ticketTypes = fetchTicketTypes();
+                for (TicketType ticketType : ticketTypes) {
+                        Button ticketButton = new Button("Buy " + ticketType.getNumberOfTickets() + " (" + ticketType.getPrice() + "₪)", event -> purchaseTicket(ticketType.getId()));
+                        ticketButton.getElement().getClassList().add("shop-button");
+                        contentContainer.add(ticketButton);
+                }
 
                 // Add the container to the main layout
                 add(contentContainer);
         }
 
+        private List<TicketType> fetchTicketTypes() {
+                try {
+                        String url = "http://localhost:8080/api/shop/ticketTypes"; // Replace with your actual API endpoint
 
-        private void purchaseTicket(int numberOfTickets) {
+                        ResponseEntity<TicketType[]> response = restTemplate.getForEntity(url, TicketType[].class);
+                        if (response.getStatusCode() == HttpStatus.OK) {
+                                List<TicketType> ticketTypes = Arrays.asList(response.getBody());
+                                // Print response
+                                logger.info("fetchTicketTypes API response : " + ticketTypes);
+                                return ticketTypes;
+                        } else {
+                                Notification.show("Failed to fetch ticket types", 3000, Notification.Position.MIDDLE);
+                                return List.of();
+                        }
+                } catch (Exception e) {
+                        logger.severe("Failed to fetch ticket types: " + e.getMessage());
+                        return List.of();
+                }
+        }
+
+        private void purchaseTicket(Long ticketTypeId) {
                 getCurrentUserId(userId -> {
                         if (userId == null) {
                                 Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
                                 return;
                         }
 
-                        String url = "http://localhost:8080/api/shop/purchaseTicket?userId=" + userId + "&ticket=" + numberOfTickets;
+                        String url = "http://localhost:8080/api/shop/purchaseTicket?userId=" + userId + "&ticketTypeId=" + ticketTypeId;
                         ResponseEntity<String> response = restTemplate.postForEntity(url, null, String.class);
 
                         if (response.getStatusCode() == HttpStatus.OK) {
-                                Notification.show("Purchased " + numberOfTickets + " ticket(s) successfully");
+                                Notification.show("Purchased ticket successfully");
                         } else {
                                 Notification.show("Purchase failed", 3000, Notification.Position.MIDDLE);
                         }

@@ -26,9 +26,6 @@ public class CalendarService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private CalendarMetadataRepository calendarMetadataRepository;
-
     @PostConstruct
     public void initializeCalendarOnStartup() {
         initializeCalendar();

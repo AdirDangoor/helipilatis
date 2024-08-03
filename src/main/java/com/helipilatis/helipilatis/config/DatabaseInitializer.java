@@ -80,6 +80,23 @@ public class DatabaseInitializer {
                 logger.info("Default instructor 'kaganov' added to the database");
             }
 
+            // create a table for the tickets configuration - number of tickets and price
+            statement.execute("CREATE TABLE IF NOT EXISTS tickets (" +
+                    "id BIGINT PRIMARY KEY, " +
+                    "number_of_tickets INT NOT NULL, " +
+                    "price INT NOT NULL)");
+
+            // Check if there are any ticket types in the tickets table
+            resultSet = statement.executeQuery("SELECT COUNT(*) FROM tickets");
+            resultSet.next();
+            if (resultSet.getInt(1) == 0) {
+                // Insert default ticket types
+                statement.execute("INSERT INTO tickets (id, number_of_tickets, price) VALUES (NEXT VALUE FOR USER_SEQ, 1, 70)");
+                statement.execute("INSERT INTO tickets (id, number_of_tickets, price) VALUES (NEXT VALUE FOR USER_SEQ, 10, 500)");
+                logger.info("Default ticket types added to the database");
+            }
+            
+
             logger.info("Database initialized successfully");
 
         } catch (Exception e) {
