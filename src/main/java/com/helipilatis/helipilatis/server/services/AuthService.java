@@ -27,18 +27,19 @@ public class AuthService {
         String phone = loginRequest.getPhone();
 
         if (phoneExistsInInstructors(phone)) {
-            Instructor instructor = instructorRepository.findByPhone(phone).orElseThrow(() -> new LoginException("Phone number does not exist"));
-            return new LoginResponse(instructor.getId(), true);
+            Instructor instructor = instructorRepository.findByPhone(phone)
+                    .orElseThrow(() -> new LoginException("Phone number does not exist"));
+            return new LoginResponse(instructor.getId(), true, instructor.getName());
         }
 
         if (phoneExistsInUsers(phone)) {
-            User user = userRepository.findByPhone(phone).orElseThrow(() -> new LoginException("Phone number does not exist"));
-            return new LoginResponse(user.getId(), false);
+            User user = userRepository.findByPhone(phone)
+                    .orElseThrow(() -> new LoginException("Phone number does not exist"));
+            return new LoginResponse(user.getId(), false, user.getName());
         }
 
         throw new LoginException("Phone number does not exist");
     }
-
 
     public Long register(RegisterRequest registerRequest) throws RegistrationException {
         String phone = registerRequest.getPhone();

@@ -4,6 +4,9 @@ import com.helipilatis.helipilatis.databaseModels.PilatisClass;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -13,11 +16,13 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Route;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -52,10 +57,12 @@ public class UserView extends BaseView {
         setJustifyContentMode(JustifyContentMode.START);
         setBackground();
         HorizontalLayout topFooter = createTopFooter();
+
         setMaxWidth("100%");
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setWidthFull();
+        mainLayout.add(topFooter);
         mainLayout.add(topFooter);
         displaySchedule(mainLayout);
         add(mainLayout);
@@ -95,14 +102,22 @@ public class UserView extends BaseView {
         }
     }
 
-
-
-
-
-
-
-
-
+    private String returnUsername() {
+        VaadinSession session = VaadinSession.getCurrent();
+        if (session != null) {
+            String username = (String) session.getAttribute("username");
+            if (username != null) {
+                logger.info("Retrieved username from session: " + username);
+                return username;
+            } else {
+                logger.warning("Username attribute is null in the session.");
+                return "null"; // Default value
+            }
+        } else {
+            logger.severe("VaadinSession is null.");
+            return "User"; // Default value
+        }
+    }
 
     private void displaySchedule(VerticalLayout mainLayout) {
         List<PilatisClass> pilatisClasses = fetchPilatisClasses();
@@ -264,7 +279,7 @@ public class UserView extends BaseView {
 
         // Add logo
         Image logo = new Image("images/logo.png", "Logo"); // Replace with your logo path
-        logo.setHeight("50px");
+        logo.setHeight("100px");
 
         // Create a layout for the buttons
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -291,8 +306,31 @@ public class UserView extends BaseView {
                 .set("background-color", "#007BFF")
                 .set("color", "white");
 
+        String username = returnUsername();
+        TextField helloMessage = new TextField();
+        helloMessage.setValue("Hello " + username + "!");
+        helloMessage.setReadOnly(true); // Make it read-only since it's just for display
+
+
+//        TextField helloMessage = new TextField();
+//        helloMessage.setValue("Hello " + returnUsername() + "!"); // Set your desired text
+//
+//        helloMessage.setReadOnly(true); // Make it read-only if it's just for display
+        helloMessage.getStyle()
+                .set("position", "absolute")
+                .set("top", "50px") // Distance from the top
+                .set("left", "50%") // Center horizontally
+                .set("transform", "translateX(-50%)") // Adjust for exact centering
+                .set("background-color", "transparent") // No background color
+                .set("border", "none") // Remove border
+                .set("outline", "none")
+                .set("color", "blue")
+                .set("box-shadow", "none"); // Remove any shadow if present
+
+
+
         // Add buttons to the button layout
-        buttonLayout.add(shopButton, myClassesButton);
+        buttonLayout.add(shopButton, myClassesButton, helloMessage);
 
         // Add logo and button layout to the top footer
         topFooter.add(logo, buttonLayout);

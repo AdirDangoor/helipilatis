@@ -92,7 +92,9 @@ public class InstructorView extends BaseView{
     private void initializeDateTabs() {
         dateTabs = new Tabs();
         dateTabs.setWidthFull();
-        dateTabs.getStyle().set("overflow-x", "auto");
+        dateTabs.getStyle()
+                .set("overflow-x", "auto")
+                .set("background-color", "rgba(255, 255, 255, 0.8)");
     }
 
     private void initializeClassesContainer() {
@@ -239,7 +241,7 @@ public class InstructorView extends BaseView{
         topFooter.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         topFooter.setAlignItems(FlexComponent.Alignment.CENTER);
         Image logo = new Image("images/logo.png", "Logo");
-        logo.setHeight("50px");
+        logo.setHeight("100px");
         Button shopButton = new Button("Shop", event -> getUI().ifPresent(ui -> ui.navigate("shop")));
         topFooter.add(logo, shopButton);
         return topFooter;

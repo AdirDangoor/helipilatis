@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.time.format.DateTimeFormatter;
 
 @Route("my-classes")
 public class MyClassesView extends BaseView {
@@ -91,6 +92,7 @@ public class MyClassesView extends BaseView {
             List<PilatisClass> userClasses = fetchUserClasses(userId);
             contentBox.removeAll(); // Clear previous content
 
+            // Add header
             H1 header = new H1("My Classes");
             header.getStyle()
                     .set("color", "white") // Title color
@@ -110,17 +112,32 @@ public class MyClassesView extends BaseView {
             } else {
                 // Display the classes in a grid
                 Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
-                grid.addColumn(PilatisClass::getDate).setHeader("Date");
+
+                // Format date column
+                grid.addColumn(pilatisClass -> pilatisClass.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                        .setHeader("Date");
+
                 grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
                 grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
                 grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
                 grid.addComponentColumn(this::createCancelButton).setHeader("");
 
                 grid.setItems(userClasses);
-                contentBox.add(grid);
+
+                // Wrap grid in a container div and adjust its size to fit the content
+                Div gridContainer = new Div(grid);
+                gridContainer.getStyle()
+                        .set("width", "auto")
+                        .set("max-width", "100%")
+                        .set("overflow-x", "auto") // Allow horizontal scroll if needed
+                        .set("margin-top", "20px");
+
+                contentBox.add(gridContainer);
             }
         });
     }
+
+
 
 
     private List<PilatisClass> fetchUserClasses(Long userId) {
