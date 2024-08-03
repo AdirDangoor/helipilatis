@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ public class InstructorView extends BaseView {
     private Tabs dateTabs;
 
     private VerticalLayout classesContainer;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     @Autowired
     public InstructorView(RestTemplate restTemplate) {
@@ -55,6 +57,7 @@ public class InstructorView extends BaseView {
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setWidthFull();
+        mainLayout.setHeightFull();
         mainLayout.add(topFooter);
         displaySchedule(mainLayout);
         add(mainLayout);
@@ -99,6 +102,8 @@ public class InstructorView extends BaseView {
         dateTabs = new Tabs();
         dateTabs.setWidthFull();
         dateTabs.getStyle().set("overflow-x", "auto");
+        dateTabs.getStyle().set("background-color", "rgba(255, 255, 255, 0.8)"); // Set transparent white background
+
     }
 
     private void initializeClassesContainer() {
@@ -106,21 +111,30 @@ public class InstructorView extends BaseView {
         classesContainer.setPadding(true);
         classesContainer.setSpacing(true);
         classesContainer.setWidthFull();
+        classesContainer.setHeightFull();
     }
 
     private void addDateTabs(Stream<LocalDate> sortedDates, Map<LocalDate, List<PilatisClass>> groupedByDate) {
         sortedDates.forEach(date -> {
-            List<PilatisClass> items = groupedByDate.get(date);
-            Tab dateTab = new Tab(date.toString());
+            // Get the day name
+            String dayName = date.getDayOfWeek().toString(); // Example: MONDAY
+            String formattedDayName = dayName.substring(0, 1) + dayName.substring(1).toLowerCase(); // Capitalize first letter
+            String formattedDate = date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")); // Format date
+            String tabLabel = formattedDate + " (" + formattedDayName + ")";
+
+            // Create tab for each day
+            Tab dateTab = new Tab(tabLabel);
             dateTab.getElement().getStyle().set("padding", "0.5em 1em");
             dateTabs.add(dateTab);
         });
 
         dateTabs.addSelectedChangeListener(event -> {
+            logger.info("Selected tab: " + dateTabs.getSelectedTab().getLabel());
             classesContainer.removeAll();
             Tab selectedTab = dateTabs.getSelectedTab();
-            String selectedDate = selectedTab.getLabel();
-            LocalDate date = LocalDate.parse(selectedDate);
+            String selectedLabel = selectedTab.getLabel();
+            String selectedDate = selectedLabel.split(" ")[0]; // Extract the date part
+            LocalDate date = LocalDate.parse(selectedDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
             List<PilatisClass> items = groupedByDate.get(date);
             VerticalLayout dayClasses = createDayClasses(items);
             classesContainer.add(dayClasses);
@@ -149,6 +163,7 @@ public class InstructorView extends BaseView {
         dayClasses.setPadding(true);
         dayClasses.setSpacing(true);
         dayClasses.setWidthFull();
+        dayClasses.setHeightFull();
         Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
         grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
         grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");

@@ -1,6 +1,7 @@
 package com.helipilatis.helipilatis.client;
 
 import com.helipilatis.helipilatis.databaseModels.PilatisClass;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
@@ -9,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
@@ -56,6 +58,7 @@ public class UserView extends BaseView {
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
         VerticalLayout mainLayout = new VerticalLayout();
         mainLayout.setWidthFull();
+        mainLayout.setHeightFull(); // Set height to 100%
         mainLayout.add(topFooter);
         displaySchedule(mainLayout);
         add(mainLayout);
@@ -128,6 +131,8 @@ public class UserView extends BaseView {
         classesContainer.setPadding(true);
         classesContainer.setSpacing(true);
         classesContainer.setWidthFull();
+        classesContainer.setHeightFull(); // Set height to 100%
+
     }
 
     private void addDateTabs(Stream<LocalDate> sortedDates, Map<LocalDate, List<PilatisClass>> groupedByDate) {
@@ -170,17 +175,29 @@ public class UserView extends BaseView {
         }
     }
 
+    // UserView.java
     private VerticalLayout createDayClasses(List<PilatisClass> items) {
         VerticalLayout dayClasses = new VerticalLayout();
         dayClasses.setPadding(true);
         dayClasses.setSpacing(true);
-        dayClasses.setWidthFull(); // Ensure the day classes layout takes full width
+        dayClasses.setWidthFull();
+        dayClasses.setHeightFull(); // Set height to 100%
+
+        dayClasses.getStyle().set("background-color", "black");
+        dayClasses.getStyle().set("border-radius", "8px");
+        dayClasses.getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.1)");
+        dayClasses.getStyle().set("padding", "1em");
 
         Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
-        grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
-        grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
-        grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
-        grid.addComponentColumn(this::createBookButton).setHeader("");
+        grid.addColumn(PilatisClass::getStartTime).setHeader("Time").setAutoWidth(true);
+        grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor").setAutoWidth(true);
+        grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants").setAutoWidth(true);
+        grid.addComponentColumn(this::createBookButton).setHeader("").setAutoWidth(true);
+
+        grid.getStyle().set("background-color", "white");
+        grid.getStyle().set("border-radius", "8px");
+        grid.getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.1)");
+        grid.getStyle().set("padding", "1em");
 
         grid.setItems(items);
         dayClasses.add(grid);
