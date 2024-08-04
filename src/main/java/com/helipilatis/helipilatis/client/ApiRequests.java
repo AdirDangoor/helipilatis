@@ -89,4 +89,9 @@ public class ApiRequests {
         }
     }
 
+    public ResponseEntity<String> sendMessageToAllUsers(String message) {
+        String url = "http://localhost:8080/api/mailbox/instructor/send-message-to-all";
+        return restTemplate.postForEntity(url, message, String.class);
+    }
+
 }

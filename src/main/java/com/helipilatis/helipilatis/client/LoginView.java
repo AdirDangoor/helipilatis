@@ -23,9 +23,14 @@ public class LoginView extends BaseView {
 
     public LoginView() {
         super();
-        initializeLayout();
-        setBackgroundImage();
-        createLoginForm();
+        try {
+            initializeLayout();
+            setBackgroundImage();
+            createLoginForm();
+        } catch (Exception ex) {
+            logger.severe("Error initializing LoginView: " + ex.getMessage());
+            Notification.show("Error initializing view", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void initializeLayout() {

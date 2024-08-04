@@ -26,8 +26,13 @@ public class RegisterView extends BaseView {
 
     public RegisterView() {
         super();
-        setupLayout();
-        setupEventHandlers();
+        try{
+            setupLayout();
+            setupEventHandlers();
+        } catch (Exception ex) {
+            logger.severe("Error initializing RegisterView: " + ex.getMessage());
+            Notification.show("Error initializing view", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void setupLayout() {

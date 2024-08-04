@@ -25,8 +25,13 @@ public class InboxView extends BaseView {
 
     public InboxView(RestTemplate restTemplate) {
         super();
-        this.restTemplate = restTemplate;
-        initializeView();
+        try {
+            this.restTemplate = restTemplate;
+            initializeView();
+        } catch (Exception e) {
+            logger.severe("Error initializing InboxView: " + e.getMessage());
+            Notification.show("Error initializing InboxView", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void initializeView() {

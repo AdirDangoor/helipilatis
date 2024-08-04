@@ -28,12 +28,22 @@ public class MyClassesView extends BaseView {
     @Autowired
     public MyClassesView(RestTemplate restTemplate) {
         super();
-        logger.info("[FUNCTION] MyClassesView constructor");
-        this.restTemplate = restTemplate;
-        initializeView();
+        try {
+            this.restTemplate = restTemplate;
+            initializeView();
+        } catch (Exception ex) {
+            logger.severe("Error initializing MyClassesView: " + ex.getMessage());
+            Notification.show("Error initializing view", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void initializeView() {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+            getUI().ifPresent(ui -> ui.navigate("")); // Redirect to login page
+            return; // Stop further processing
+        }
         setupBackground();
         checkInstructorStatus();
         initializeContentBox();

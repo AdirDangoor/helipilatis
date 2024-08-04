@@ -25,11 +25,22 @@ public class ShopView extends BaseView {
 
         public ShopView(RestTemplate restTemplate) {
                 super();
-                this.restTemplate = restTemplate;
-                initializeView();
+                try {
+                        this.restTemplate = restTemplate;
+                        initializeView();
+                } catch (Exception ex) {
+                        logger.severe("Error initializing ShopView: " + ex.getMessage());
+                        Notification.show("Error initializing view", 3000, Notification.Position.MIDDLE);
+                }
         }
 
         public void initializeView() {
+                Long userId = getCurrentUserId();
+                if (userId == null) {
+                        Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+                        getUI().ifPresent(ui -> ui.navigate("")); // Redirect to login page
+                        return; // Stop further processing
+                }
                 setupLayout();
                 addGlobalStyles();
                 Div contentContainer = createContentContainer();

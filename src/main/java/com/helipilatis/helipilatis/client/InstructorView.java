@@ -41,11 +41,22 @@ public class InstructorView extends BaseView {
     @Autowired
     public InstructorView(RestTemplate restTemplate) {
         super();
-        this.restTemplate = restTemplate;
-        initializeView();
+        try {
+            this.restTemplate = restTemplate;
+            initializeView();
+        } catch (Exception ex) {
+            logger.severe("Error initializing InstructorView: " + ex.getMessage());
+            Notification.show("Error initializing view", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void initializeView() {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            Notification.show("instructor not logged in", 3000, Notification.Position.MIDDLE);
+            getUI().ifPresent(ui -> ui.navigate("")); // Redirect to login page
+            return; // Stop further processing
+        }
         setSizeFull();
         setAlignItems(Alignment.STRETCH);
         setJustifyContentMode(JustifyContentMode.START);

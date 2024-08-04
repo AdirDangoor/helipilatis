@@ -12,15 +12,25 @@ import org.springframework.web.client.RestTemplate;
 @Route("instructor-message")
 public class InstructorMessageView extends BaseView {
 
-    private final RestTemplate restTemplate;
-
     @Autowired
     public InstructorMessageView(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        initializeView();
+        super();
+        try {
+            this.restTemplate = restTemplate;
+            initializeView();
+        } catch (Exception ex) {
+            logger.severe("Error initializing InstructorMessageView: " + ex.getMessage());
+            Notification.show("Error initializing view", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void initializeView() {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            Notification.show("instructor not logged in", 3000, Notification.Position.MIDDLE);
+            getUI().ifPresent(ui -> ui.navigate("")); // Redirect to login page
+            return; // Stop further processing
+        }
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
@@ -42,8 +52,7 @@ public class InstructorMessageView extends BaseView {
 
     private void sendMessageToAllUsers(String message) {
         try {
-            String url = "http://localhost:8080/api/mailbox/instructor/send-message-to-all";
-            ResponseEntity<String> response = restTemplate.postForEntity(url, message, String.class);
+            ResponseEntity<String> response = apiRequests.sendMessageToAllUsers(message);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 Notification.show("Message sent successfully", 3000, Notification.Position.MIDDLE);
