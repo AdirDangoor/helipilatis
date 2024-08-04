@@ -164,6 +164,16 @@ public class CalendarController {
         }
     }
 
+    // CalendarController.java
+    @PostMapping("/instructor/{classId}/participants")
+    public ResponseEntity<String> updateParticipants(@PathVariable Long classId, @RequestBody int newParticipants) {
+        try {
+            calendarService.updateParticipants(classId, newParticipants);
+            return ResponseEntity.ok("Number of participants updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating participants: " + e.getMessage());
+        }
+    }
 
 
 }

@@ -4,6 +4,7 @@ import com.helipilatis.helipilatis.databaseModels.PilatisClass;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -153,6 +154,7 @@ public class UserView extends BaseView {
             List<PilatisClass> items = groupedByDate.get(date);
             VerticalLayout dayClasses = createDayClasses(items);
             classesContainer.add(dayClasses);
+            refreshClassesContainer();
         });
     }
 
@@ -191,7 +193,13 @@ public class UserView extends BaseView {
         }).setHeader("Time").setAutoWidth(true);
         grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor").setAutoWidth(true);
         grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants").setAutoWidth(true);
-        grid.addComponentColumn(this::createBookButton).setHeader("").setAutoWidth(true);
+        grid.addComponentColumn(pilatisClass -> {
+            if (pilatisClass.getSignedUsers().size() < pilatisClass.getMaxParticipants()) {
+                return createBookButton(pilatisClass);
+            } else {
+                return new Div(); // Return an empty component if max participants reached
+            }
+        }).setHeader("").setAutoWidth(true);
 
         grid.getStyle().set("background-color", "white");
         grid.getStyle().set("border-radius", "8px");

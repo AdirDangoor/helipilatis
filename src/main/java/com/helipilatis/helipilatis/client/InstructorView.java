@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.html.Image;
@@ -58,6 +59,8 @@ public class InstructorView extends BaseView {
         mainLayout.add(topFooter);
         displaySchedule(mainLayout);
         add(mainLayout);
+        refreshClassesContainer();
+
     }
 
     private void setBackground() {
@@ -135,6 +138,8 @@ public class InstructorView extends BaseView {
             List<PilatisClass> items = groupedByDate.get(date);
             VerticalLayout dayClasses = createDayClasses(items);
             classesContainer.add(dayClasses);
+            refreshClassesContainer();
+
         });
     }
 
@@ -174,10 +179,44 @@ public class InstructorView extends BaseView {
             details.add(createUserNamesLayout(pilatisClass.getId()));
             return details;
         }).setHeader("");
+        grid.addComponentColumn(this::createModifyParticipantsButton).setHeader("Modify Participants");
         grid.setItems(items);
         dayClasses.add(grid);
         return dayClasses;
     }
+
+    private HorizontalLayout createModifyParticipantsButton(PilatisClass pilatisClass) {
+        HorizontalLayout layout = new HorizontalLayout();
+        TextField participantsField = new TextField();
+        participantsField.setValue(String.valueOf(pilatisClass.getMaxParticipants()));
+        Button saveButton = new Button("Save");
+        saveButton.addClickListener(event -> {
+            try {
+                int newParticipants = Integer.parseInt(participantsField.getValue());
+                if (newParticipants < pilatisClass.getSignedUsers().size()) {
+                    Notification.show("New number of participants cannot be less than the current number of signed users.");
+                    return;
+                }
+                if (newParticipants < 1) {
+                    Notification.show("Number of participants must be at least 1.");
+                    return;
+                }
+                // Send the new number of participants to the server
+                ResponseEntity<String> response = apiRequests.instructorUpdateParticipants(pilatisClass.getId(), newParticipants);
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    Notification.show("Number of participants updated successfully.");
+                    refreshClassesContainer(); // Refresh the grid to reflect the changes
+                } else {
+                    Notification.show("Error updating participants: " + response.getBody());
+                }
+            } catch (NumberFormatException e) {
+                Notification.show("Please enter a valid number.");
+            }
+        });
+        layout.add(participantsField, saveButton);
+        return layout;
+    }
+
 
     private Div createUserNamesLayout(Long classId) {
         Div userNamesLayout = new Div();
@@ -259,8 +298,9 @@ public class InstructorView extends BaseView {
     private void refreshClassesContainer() {
         classesContainer.removeAll();
         Tab selectedTab = dateTabs.getSelectedTab();
-        String selectedDate = selectedTab.getLabel();
-        LocalDate date = LocalDate.parse(selectedDate);
+        String selectedLabel = selectedTab.getLabel();
+        String selectedDate = selectedLabel.split(" ")[0]; // Extract the date part
+        LocalDate date = LocalDate.parse(selectedDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"));
         List<PilatisClass> items = fetchPilatisClasses().stream()
                 .filter(pilatisClass -> pilatisClass.getDate().equals(date))
                 .collect(Collectors.toList());

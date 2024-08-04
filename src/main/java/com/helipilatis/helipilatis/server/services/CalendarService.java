@@ -266,6 +266,19 @@ public class CalendarService extends BaseService {
         }
     }
 
+    // CalendarService.java
+    public void updateParticipants(Long classId, int newParticipants) {
+        try {
+            PilatisClass pilatisClass = calendarRepository.findById(classId)
+                    .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+            pilatisClass.setMaxParticipants(newParticipants);
+            calendarRepository.save(pilatisClass);
+        } catch (Exception e) {
+            logger.severe("Failed to update participants: " + e.getMessage());
+            throw e;
+        }
+    }
+
     public void sendMessageToClassClients(Long classId, String message) {
         PilatisClass pilatisClass = calendarRepository.findById(classId)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));

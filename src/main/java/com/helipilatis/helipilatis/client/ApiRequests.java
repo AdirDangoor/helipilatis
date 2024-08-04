@@ -80,6 +80,13 @@ public class ApiRequests {
         }
     }
 
-
+    public ResponseEntity<String> instructorUpdateParticipants(Long classId, int newParticipants) {
+        String url = "http://localhost:8080/api/calendar/instructor/" + classId + "/participants";
+        try {
+            return restTemplate.postForEntity(url, newParticipants, String.class);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+        }
+    }
 
 }
