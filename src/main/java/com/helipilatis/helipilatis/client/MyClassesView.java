@@ -16,129 +16,121 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.time.format.DateTimeFormatter;
 
 @Route("my-classes")
 public class MyClassesView extends BaseView {
 
-    private final RestTemplate restTemplate;
-    private final Logger logger = Logger.getLogger(MyClassesView.class.getName());
+    private final Logger logger = Logger.getLogger("MyClassesView");
     private Div contentBox;
 
     @Autowired
     public MyClassesView(RestTemplate restTemplate) {
+        super();
         logger.info("[FUNCTION] MyClassesView constructor");
         this.restTemplate = restTemplate;
-        setSizeFull();
-        setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
+        initializeView();
+    }
 
-        // Set full-page background image
+    private void initializeView() {
+        setupBackground();
+        checkInstructorStatus();
+        initializeContentBox();
+        displayUserClasses();
+    }
+
+    private void setupBackground() {
         String imagePath = "images/shop_background.jpg"; // Replace with your image path
         getElement().getStyle()
                 .set("background-image", "url('" + imagePath + "')")
                 .set("background-size", "cover")
                 .set("background-position", "center");
+    }
 
-        // Check if the user is an instructor
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            Boolean isInstructor = (Boolean) session.getAttribute("isInstructor");
-            if (isInstructor != null && isInstructor) {
-                Notification.show("Instructors cannot view this page", 3000, Notification.Position.MIDDLE);
-                getUI().ifPresent(ui -> ui.navigate("instructor"));
-                return;
-            }
+    private void checkInstructorStatus() {
+        if (isInstructor()) {
+            Notification.show("Instructors cannot view this page", 3000, Notification.Position.MIDDLE);
+            getUI().ifPresent(ui -> ui.navigate("instructor"));
         }
+    }
 
-        // Add content box
+    private void initializeContentBox() {
         contentBox = new Div();
         contentBox.getStyle()
                 .set("width", "600px")
                 .set("max-width", "100%")
+                .set("height", "100%") // Set height to 100%
                 .set("padding", "20px")
                 .set("border-radius", "8px")
                 .set("background-color", "rgba(173, 216, 230, 0.5)") // Transparent light blue
                 .set("color", "black") // Text color for the box
                 .set("text-align", "center"); // Center text horizontally
         add(contentBox);
+    }
 
-        // Add header
-        H1 header = new H1("My Classes");
+    private void displayUserClasses() {
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+        List<PilatisClass> userClasses = fetchUserClasses(userId);
+        contentBox.removeAll(); // Clear previous content
+
+        addHeader("My Classes");
+
+        if (userClasses.isEmpty()) {
+            displayNoClassesMessage();
+        } else {
+            displayClassesGrid(userClasses);
+        }
+    }
+
+    private void addHeader(String title) {
+        H1 header = new H1(title);
         header.getStyle()
                 .set("color", "white") // Title color
                 .set("margin", "0"); // Remove default margin
         contentBox.add(header);
-
-        // Initialize classes container
-        VerticalLayout classesContainer = new VerticalLayout();
-        classesContainer.setPadding(true);
-        classesContainer.setSpacing(true);
-        classesContainer.setWidthFull();
-        contentBox.add(classesContainer);
-
-        // Fetch and display the user's classes
-        displayUserClasses();
     }
 
-    private void displayUserClasses() {
-        getCurrentUserId(userId -> {
-            if (userId == null) {
-                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
-                return;
-            }
-            List<PilatisClass> userClasses = fetchUserClasses(userId);
-            contentBox.removeAll(); // Clear previous content
-
-            // Add header
-            H1 header = new H1("My Classes");
-            header.getStyle()
-                    .set("color", "white") // Title color
-                    .set("margin", "0"); // Remove default margin
-            contentBox.add(header);
-
-            if (userClasses.isEmpty()) {
-                // Display a message if there are no classes
-                Div message = new Div();
-                message.setText("You are not registered for any classes yet...");
-                message.getStyle()
-                        .set("color", "black")
-                        .set("font-size", "20px")
-                        .set("text-align", "center")
-                        .set("margin-top", "20px");
-                contentBox.add(message);
-            } else {
-                // Display the classes in a grid
-                Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
-
-                // Format date column
-                grid.addColumn(pilatisClass -> pilatisClass.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
-                        .setHeader("Date");
-
-                grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
-                grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
-                grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
-                grid.addComponentColumn(this::createCancelButton).setHeader("");
-
-                grid.setItems(userClasses);
-
-                // Wrap grid in a container div and adjust its size to fit the content
-                Div gridContainer = new Div(grid);
-                gridContainer.getStyle()
-                        .set("width", "auto")
-                        .set("max-width", "100%")
-                        .set("overflow-x", "auto") // Allow horizontal scroll if needed
-                        .set("margin-top", "20px");
-
-                contentBox.add(gridContainer);
-            }
-        });
+    private void displayNoClassesMessage() {
+        Div message = new Div();
+        message.setText("You are not registered for any classes yet...");
+        message.getStyle()
+                .set("color", "black")
+                .set("font-size", "20px")
+                .set("text-align", "center")
+                .set("margin-top", "20px");
+        contentBox.add(message);
     }
 
+    private void displayClassesGrid(List<PilatisClass> userClasses) {
+        Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
 
+        // Format date column
+        grid.addColumn(pilatisClass -> pilatisClass.getDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")))
+                .setHeader("Date");
 
+        grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
+        grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
+        grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
+        grid.addComponentColumn(this::createCancelButton).setHeader("");
+
+        grid.setItems(userClasses);
+
+        // Wrap grid in a container div and adjust its size to fit the content
+        Div gridContainer = new Div(grid);
+        gridContainer.getStyle()
+                .set("width", "auto")
+                .set("max-width", "100%")
+                .set("height", "100%") // Set height to 100%
+                .set("overflow-x", "auto") // Allow horizontal scroll if needed
+                .set("margin-top", "20px");
+
+        contentBox.add(gridContainer);
+    }
 
     private List<PilatisClass> fetchUserClasses(Long userId) {
         String url = "http://localhost:8080/api/calendar/user-classes/" + userId; // Replace with your actual API endpoint
@@ -151,29 +143,23 @@ public class MyClassesView extends BaseView {
     private Button createCancelButton(PilatisClass pilatisClass) {
         Button button = new Button("CANCEL");
         button.addClickListener(e -> {
-            VaadinSession session = VaadinSession.getCurrent();
-            if (session != null) {
-                Long userId = (Long) session.getAttribute("userId");
-                if (userId != null) {
-                    try {
-                        ResponseEntity<String> response = apiRequests.userCancelClass(pilatisClass.getId(), userId);
+            Long userId = getCurrentUserId();
+            if (userId != null) {
+                try {
+                    ResponseEntity<String> response = apiRequests.userCancelClass(pilatisClass.getId(), userId);
 
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
-                            refreshClassesContainer(); // Refresh classes instead of reloading the page
-                        } else {
-                            Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
-                        }
-                    } catch (Exception ex) {
-                        logger.severe("Error cancelling class: " + ex.getMessage());
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        Notification.show("Class cancelled successfully", 3000, Notification.Position.MIDDLE);
+                        refreshClassesContainer();
+                    } else {
                         Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
                     }
-                } else {
-                    Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+                } catch (Exception ex) {
+                    logger.severe("Error cancelling class: " + ex.getMessage());
+                    Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
                 }
             } else {
-                logger.severe("VaadinSession is null");
-                Notification.show("Error: Session is null", 3000, Notification.Position.MIDDLE);
+                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
             }
         });
 
@@ -186,40 +172,18 @@ public class MyClassesView extends BaseView {
     }
 
     private void refreshClassesContainer() {
-        getCurrentUserId(userId -> {
-            if (userId == null) {
-                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
-                return;
-            }
-            List<PilatisClass> userClasses = fetchUserClasses(userId);
-            contentBox.removeAll();
-            H1 header = new H1("My Classes");
-            header.getStyle()
-                    .set("color", "white") // Title color
-                    .set("margin", "0"); // Remove default margin
-            contentBox.add(header);
-            Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
-            grid.addColumn(PilatisClass::getDate).setHeader("Date");
-            grid.addColumn(PilatisClass::getStartTime).setHeader("Time");
-            grid.addColumn(pilatisClass -> pilatisClass.getInstructor().getName()).setHeader("Instructor");
-            grid.addColumn(pilatisClass -> pilatisClass.getSignedUsers().size() + "/" + pilatisClass.getMaxParticipants()).setHeader("Participants");
-            grid.addComponentColumn(this::createCancelButton).setHeader("");
-
-            grid.setItems(userClasses);
-            contentBox.add(grid);
-        });
-    }
-
-    private void getCurrentUserId(Consumer<Long> callback) {
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            Long userId = (Long) session.getAttribute("userId");
-            logger.info("userId: " + userId);
-            callback.accept(userId);
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+            return;
+        }
+        List<PilatisClass> userClasses = fetchUserClasses(userId);
+        contentBox.removeAll();
+        addHeader("My Classes");
+        if (userClasses.isEmpty()) {
+            displayNoClassesMessage();
         } else {
-            logger.severe("VaadinSession is null");
-            callback.accept(null);
+            displayClassesGrid(userClasses);
         }
     }
-
 }

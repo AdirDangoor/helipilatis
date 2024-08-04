@@ -237,55 +237,53 @@ public class InstructorView extends BaseView {
 
     private Button createBookButton(PilatisClass pilatisClass) {
         Button button = new Button();
-        getCurrentUserId(userId -> {
-            if (userId == null) {
-                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
-                return;
-            }
-            if (pilatisClass.isCanceled()) {
-                button.setText("RESTORE");
-                button.addClickListener(e -> {
-                    try {
-                        VaadinSession session = VaadinSession.getCurrent();
-                        if (session != null) {
-                            Tab selectedTab = dateTabs.getSelectedTab();
-                            session.setAttribute("selectedDate", selectedTab.getLabel());
-                        }
-                        ResponseEntity<String> response = apiRequests.instructorRestoreClass(pilatisClass.getId());
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully restored", 3000, Notification.Position.MIDDLE);
-                            refreshClassesContainer();
-                        } else {
-                            Notification.show("Error restoring class", 3000, Notification.Position.MIDDLE);
-                        }
-                    } catch (Exception ex) {
-                        logger.severe("Error restoring class: " + ex.getMessage());
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+        }
+        if (pilatisClass.isCanceled()) {
+            button.setText("RESTORE");
+            button.addClickListener(e -> {
+                try {
+                    VaadinSession session = VaadinSession.getCurrent();
+                    if (session != null) {
+                        Tab selectedTab = dateTabs.getSelectedTab();
+                        session.setAttribute("selectedDate", selectedTab.getLabel());
+                    }
+                    ResponseEntity<String> response = apiRequests.instructorRestoreClass(pilatisClass.getId());
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        Notification.show("Successfully restored", 3000, Notification.Position.MIDDLE);
+                        refreshClassesContainer();
+                    } else {
                         Notification.show("Error restoring class", 3000, Notification.Position.MIDDLE);
                     }
-                });
-            } else {
-                button.setText("CANCEL");
-                button.addClickListener(e -> {
-                    try {
-                        VaadinSession session = VaadinSession.getCurrent();
-                        if (session != null) {
-                            Tab selectedTab = dateTabs.getSelectedTab();
-                            session.setAttribute("selectedDate", selectedTab.getLabel());
-                        }
-                        ResponseEntity<String> response = apiRequests.instructorCancelClass(pilatisClass.getId());
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
-                            refreshClassesContainer();
-                        } else {
-                            Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
-                        }
-                    } catch (Exception ex) {
-                        logger.severe("Error cancelling class: " + ex.getMessage());
+                } catch (Exception ex) {
+                    logger.severe("Error restoring class: " + ex.getMessage());
+                    Notification.show("Error restoring class", 3000, Notification.Position.MIDDLE);
+                }
+            });
+        } else {
+            button.setText("CANCEL");
+            button.addClickListener(e -> {
+                try {
+                    VaadinSession session = VaadinSession.getCurrent();
+                    if (session != null) {
+                        Tab selectedTab = dateTabs.getSelectedTab();
+                        session.setAttribute("selectedDate", selectedTab.getLabel());
+                    }
+                    ResponseEntity<String> response = apiRequests.instructorCancelClass(pilatisClass.getId());
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
+                        refreshClassesContainer();
+                    } else {
                         Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
                     }
-                });
-            }
-        });
+                } catch (Exception ex) {
+                    logger.severe("Error cancelling class: " + ex.getMessage());
+                    Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
+                }
+            });
+        };
         button.getStyle()
                 .set("background-color", pilatisClass.isCanceled() ? "#28a745" : "#007BFF")
                 .set("color", "white")
@@ -308,17 +306,6 @@ public class InstructorView extends BaseView {
         classesContainer.add(dayClasses);
     }
 
-    private void getCurrentUserId(Consumer<Long> callback) {
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            Long userId = (Long) session.getAttribute("userId");
-            logger.info("userId: " + userId);
-            callback.accept(userId);
-        } else {
-            logger.severe("VaadinSession is null");
-            callback.accept(null);
-        }
-    }
 
     private HorizontalLayout createTopFooter() {
         HorizontalLayout topFooter = new HorizontalLayout();
@@ -327,7 +314,7 @@ public class InstructorView extends BaseView {
         topFooter.setAlignItems(FlexComponent.Alignment.CENTER);
         Image logo = new Image("images/logo.png", "Logo");
         logo.setHeight("50px");
-        Button shopButton = new Button("Shop", event -> getUI().ifPresent(ui -> ui.navigate("shop")));
+        Button shopButton = new Button("Message Users", event -> getUI().ifPresent(ui -> ui.navigate("instructor-message")));
         topFooter.add(logo, shopButton);
         return topFooter;
     }

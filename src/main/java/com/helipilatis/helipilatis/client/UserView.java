@@ -81,27 +81,6 @@ public class UserView extends BaseView {
     }
 
 
-    private void getCurrentUserId(Consumer<Long> callback) {
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session != null) {
-            Long userId = (Long) session.getAttribute("userId");
-            logger.info("userId: " + userId);
-            callback.accept(userId);
-        } else {
-            logger.severe("VaadinSession is null");
-            callback.accept(null);
-        }
-    }
-
-
-
-
-
-
-
-
-
-
     private void displaySchedule(VerticalLayout mainLayout) {
         List<PilatisClass> pilatisClasses = fetchPilatisClasses();
         Map<LocalDate, List<PilatisClass>> groupedByDate = groupByDate(pilatisClasses);
@@ -214,53 +193,51 @@ public class UserView extends BaseView {
 
     private Button createBookButton(PilatisClass pilatisClass) {
         Button button = new Button();
-        getCurrentUserId(userId -> {
-            if (userId == null) {
-                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
-                return;
-            }
+        Long userId = getCurrentUserId();
+        if (userId == null) {
+            Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+        }
 
-            boolean isBooked = pilatisClass.getSignedUsers().stream()
-                    .anyMatch(user -> user.getId().equals(userId));
+        boolean isBooked = pilatisClass.getSignedUsers().stream()
+                .anyMatch(user -> user.getId().equals(userId));
 
-            if (isBooked) {
-                button.setText("Cancel Class");
-                button.addClickListener(e -> {
-                    try {
-                        ResponseEntity<String> response = apiRequests.userCancelClass(pilatisClass.getId(), userId);
+        if (isBooked) {
+            button.setText("Cancel Class");
+            button.addClickListener(e -> {
+                try {
+                    ResponseEntity<String> response = apiRequests.userCancelClass(pilatisClass.getId(), userId);
 
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
-                            UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
-                        } else {
-                            Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
-                        }
-                    } catch (Exception ex) {
-                        logger.severe("Error cancelling class: " + ex.getMessage());
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        Notification.show("Successfully cancelled", 3000, Notification.Position.MIDDLE);
+                        UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
+                    } else {
                         Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
                     }
-                });
-            } else {
-                button.setText("Book Class");
-                button.addClickListener(e -> {
-                    try {
-                        ResponseEntity<String> response = apiRequests.userBookClass(pilatisClass.getId(), userId);
+                } catch (Exception ex) {
+                    logger.severe("Error cancelling class: " + ex.getMessage());
+                    Notification.show("Error cancelling class", 3000, Notification.Position.MIDDLE);
+                }
+            });
+        } else {
+            button.setText("Book Class");
+            button.addClickListener(e -> {
+                try {
+                    ResponseEntity<String> response = apiRequests.userBookClass(pilatisClass.getId(), userId);
 
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            Notification.show("Successfully booked, bought with 1 ticket", 3000, Notification.Position.MIDDLE);
-                            UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
-                        } else {
-                            String errorMessage = response.getBody();
-                            Notification.show("Error booking class: " + errorMessage, 3000, Notification.Position.MIDDLE);
-                            refreshClassesContainer();
-                        }
-                    } catch (Exception ex) {
-                        logger.severe("Error booking class: " + ex.getMessage());
-                        Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        Notification.show("Successfully booked, bought with 1 ticket", 3000, Notification.Position.MIDDLE);
+                        UI.getCurrent().navigate("my-classes"); // Navigate to "my classes" page
+                    } else {
+                        String errorMessage = response.getBody();
+                        Notification.show("Error booking class: " + errorMessage, 3000, Notification.Position.MIDDLE);
+                        refreshClassesContainer();
                     }
-                });
-            }
-        });
+                } catch (Exception ex) {
+                    logger.severe("Error booking class: " + ex.getMessage());
+                    Notification.show("Error booking class", 3000, Notification.Position.MIDDLE);
+                }
+            });
+        };
 
         button.getStyle()
                 .set("background-color", "#007BFF")
@@ -305,14 +282,13 @@ public class UserView extends BaseView {
 
         // Add "My Classes" button
         Button myClassesButton = new Button("My Classes", event -> {
-            getCurrentUserId(userId -> {
-                if (userId != null) {
-                    // Navigate to a page to display the user's classes or make an API call to fetch classes
-                    getUI().ifPresent(ui -> ui.navigate("my-classes"));
-                } else {
-                    Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
-                }
-            });
+            Long userId = getCurrentUserId();
+            if (userId != null) {
+                // Navigate to a page to display the user's classes or make an API call to fetch classes
+                getUI().ifPresent(ui -> ui.navigate("my-classes"));
+            } else {
+                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+            }
         });
         myClassesButton.getStyle()
                 .set("background-color", "#007BFF")
