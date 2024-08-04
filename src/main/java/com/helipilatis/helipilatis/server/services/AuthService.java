@@ -11,6 +11,7 @@ import com.helipilatis.helipilatis.server.requests.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 
 /**
@@ -18,13 +19,9 @@ import java.util.Optional;
  * Contains methods for login and registration
  */
 @Service
-public class AuthService {
+public class AuthService extends BaseService {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private InstructorRepository instructorRepository;
+    private static final Logger logger = Logger.getLogger("AuthService");
 
     public LoginResponse login(LoginRequest loginRequest) throws LoginException {
         String phone = loginRequest.getPhone();

@@ -123,11 +123,11 @@ public class CalendarController {
      */
     @PostMapping("/instructor/classes/{classId}/cancel")
     public ResponseEntity<String> cancelClass(@PathVariable Long classId) {
-        boolean success = calendarService.cancelClassAsInstructor(classId);
-        if (success) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.status(500).body("Error cancelling class");
+        try {
+            calendarService.cancelClassAsInstructor(classId);
+            return ResponseEntity.ok("Class cancelled successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error cancelling class: " + e.getMessage());
         }
     }
 
@@ -139,11 +139,11 @@ public class CalendarController {
      */
     @PostMapping("/instructor/classes/{classId}/restore")
     public ResponseEntity<String> restoreClass(@PathVariable Long classId) {
-        boolean success = calendarService.restoreClassAsInstructor(classId);
-        if (success) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.status(500).body("Error restoring class");
+        try {
+            calendarService.restoreClassAsInstructor(classId);
+            return ResponseEntity.ok("Class restored successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error restoring class: " + e.getMessage());
         }
     }
 
@@ -159,8 +159,8 @@ public class CalendarController {
             List<String> userNames = calendarService.getUserNamesForClass(classId);
             return ResponseEntity.ok(userNames);
         } catch (Exception e) {
-            logger.severe("Unknown content type: " + e.getMessage());
-            return ResponseEntity.status(415).body(List.of("Unsupported content type"));
+            logger.severe("Error getting user names for class: " + e.getMessage());
+            return ResponseEntity.status(500).body(List.of());
         }
     }
 

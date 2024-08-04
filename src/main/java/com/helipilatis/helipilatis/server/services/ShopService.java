@@ -9,11 +9,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @Service
-public class ShopService {
+public class ShopService extends BaseService {
 
-    private final UserRepository userRepository;
-    private final TicketTypeRepository ticketTypeRepository;
-    private static final Logger logger = Logger.getLogger(ShopService.class.getName());
+    private static final Logger logger = Logger.getLogger("ShopService");
 
     @Autowired
     public ShopService(UserRepository userRepository, TicketTypeRepository ticketTypeRepository) {

@@ -17,45 +17,45 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @Service
-public class CalendarService {
+public class CalendarService extends BaseService {
 
-    private static final java.util.logging.Logger logger = Logger.getLogger(CalendarService.class.getName());
+    private static final java.util.logging.Logger logger = Logger.getLogger("CalendarService");
 
-    @Autowired
-    private CalendarRepository calendarRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
+    /**
+     * Initializes the calendar on startup
+     */
     @PostConstruct
     public void initializeCalendarOnStartup() {
         initializeCalendar();
     }
 
+    /**
+     * Initializes the calendar by adding classes for the next 4 weeks
+     * This method is scheduled to run every day at midnight
+     */
     @Scheduled(cron = "0 0 0 * * ?")
     public void initializeCalendarDaily() {
         initializeCalendar();
     }
 
+    /**
+     * Initializes the calendar by adding classes for the next 4 weeks
+     */
     public void initializeCalendar() {
         try {
             logger.info("Initializing calendar");
             LocalDate today = LocalDate.now();
             LocalDate endDate = today.plusWeeks(4);
             LocalDate yesterday = today.minusDays(1);
-            logger.info("Today: " + today + ", end date: " + endDate + ", yesterday: " + yesterday);
             // Remove all classes with dates that have passed
             List<PilatisClass> pastClasses = calendarRepository.findClassesByDateRangeWithSignedUsers(today.minusWeeks(1), yesterday);
-            logger.info("Past classes: " + pastClasses);
 
             if (!pastClasses.isEmpty()) {
                 calendarRepository.deleteAll(pastClasses);
                 logger.info("Removed past classes: " + pastClasses.size());
             }
 
-            LocalDate llastClassDate = calendarRepository.findLastClassDate().orElse(today.minusDays(1));
-            logger.info("Last class date: " + llastClassDate);
-            // Fetch the last class date
             LocalDate lastClassDate = calendarRepository.findLastClassDate().orElse(today.minusDays(1));
             if (!lastClassDate.isBefore(endDate)) {
                 return;
@@ -85,100 +85,145 @@ public class CalendarService {
             }
 
             logger.info("Saving calendar entries: " + calendarEntries.size());
-
             calendarRepository.saveAll(calendarEntries);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe("Failed to initialize calendar: " + e.getMessage());
         }
     }
 
+    /**
+     * Fetches the default instructor ID
+     * @return the default instructor ID
+     */
     private Long getDefaultInstructorId() {
-        return calendarRepository.findInstructorIdByName("kaganov");
+        try {
+            return calendarRepository.findInstructorIdByName("kaganov");
+        } catch (Exception e) {
+            logger.severe("Failed to fetch default instructor ID: " + e.getMessage());
+            throw e;
+        }
     }
 
+    /**
+     * Fetches all classes
+     * @return a list of all classes
+     */
     public List<PilatisClass> getAllClasses() {
-        return calendarRepository.findAll();
+        try {
+            return calendarRepository.findAll();
+        } catch (Exception e) {
+            logger.severe("Failed to fetch all classes: " + e.getMessage());
+            throw e;
+        }
     }
 
+    /**
+     * Fetches all active classes
+     * @return a list of all active classes
+     */
     public List<PilatisClass> getAllActiveClasses() {
-        logger.info("Getting all active classes");
-        return calendarRepository.findAll().stream()
-                .filter(pilatisClass -> !pilatisClass.isCanceled())
-                .collect(Collectors.toList());
+        try {
+            return calendarRepository.findAll().stream()
+                    .filter(pilatisClass -> !pilatisClass.isCanceled())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.severe("Failed to fetch all active classes: " + e.getMessage());
+            throw e;
+        }
     }
 
-    public PilatisClass saveClass(PilatisClass pilatisClass) {
-        return calendarRepository.save(pilatisClass);
-    }
-
-    public PilatisClass updateClass(Long id, PilatisClass pilatisClass) {
-        pilatisClass.setId(id);
-        return calendarRepository.save(pilatisClass);
-    }
-
-    public void deleteClass(Long id) {
-        calendarRepository.deleteById(id);
-    }
-
+    /**
+     * Fetches all classes for a specific user
+     * @return a list of all classes for the user
+     */
     public List<PilatisClass> getUserClasses(Long userId) {
-        return calendarRepository.findClassesByUserId(userId);
+        try {
+            return calendarRepository.findClassesByUserId(userId);
+        } catch (Exception e) {
+            logger.severe("Failed to fetch user classes: " + e.getMessage());
+            throw e;
+        }
     }
 
-
+    /**
+     * Fetches class for a specific id
+     * @param classId the id of the class
+     * @return the class
+     */
     public PilatisClass getClassById(Long classId) {
-        Optional<PilatisClass> optionalClass = calendarRepository.findById(classId);
-        if (optionalClass.isPresent()) {
-            return optionalClass.get();
-        } else {
-            throw new IllegalArgumentException("Class not found with id: " + classId);
+        try {
+            Optional<PilatisClass> optionalClass = calendarRepository.findById(classId);
+            if (optionalClass.isPresent()) {
+                return optionalClass.get();
+            } else {
+                throw new IllegalArgumentException("Class not found with id: " + classId);
+            }
+        } catch (Exception e) {
+            logger.severe("Failed to fetch class by id: " + e.getMessage());
+            throw e;
         }
     }
 
+    /**
+     * Signs up a user for a class
+     * @param classId the id of the class
+     * @param userId the id of the user
+     */
     public void signUpForClass(Long classId, Long userId) throws ServerExceptions.NotEnoughTicketsException {
-        PilatisClass pilatisClass = calendarRepository.findById(classId)
-                .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+        try{
+            PilatisClass pilatisClass = calendarRepository.findById(classId)
+                    .orElseThrow(() -> new IllegalArgumentException("Class not found"));
 
-        if (pilatisClass.getSignedUsers().size() >= pilatisClass.getMaxParticipants()) {
-            throw new IllegalStateException("Class is full");
-        }
+            if (pilatisClass.getSignedUsers().size() >= pilatisClass.getMaxParticipants()) {
+                throw new IllegalStateException("Class is full");
+            }
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (user.getTickets() <= 0) {
-            throw new ServerExceptions.NotEnoughTicketsException("User does not have enough tickets");
-        }
+            if (user.getTickets() <= 0) {
+                throw new ServerExceptions.NotEnoughTicketsException("User does not have enough tickets");
+            }
 
-        List<User> signedUsers = pilatisClass.getSignedUsers();
-        if (!signedUsers.contains(user)) {
-            signedUsers.add(user);
-            pilatisClass.setSignedUsers(signedUsers);
-            user.setTickets(user.getTickets() - 1);
-            userRepository.save(user);
-            calendarRepository.save(pilatisClass);
+            List<User> signedUsers = pilatisClass.getSignedUsers();
+            if (!signedUsers.contains(user)) {
+                signedUsers.add(user);
+                pilatisClass.setSignedUsers(signedUsers);
+                user.setTickets(user.getTickets() - 1);
+                userRepository.save(user);
+                calendarRepository.save(pilatisClass);
+            }
+        } catch (Exception e) {
+            logger.severe("Failed to sign up for class: " + e.getMessage());
+            throw e;
         }
     }
 
 
 
     public void cancelClassAsUser(Long classId, Long userId) {
-        PilatisClass pilatisClass = calendarRepository.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try{
+            PilatisClass pilatisClass = calendarRepository.findById(classId)
+                    .orElseThrow(() -> new RuntimeException("Class not found"));
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!pilatisClass.getSignedUsers().contains(user)) {
-            throw new RuntimeException("User not signed up for this class");
+            if (!pilatisClass.getSignedUsers().contains(user)) {
+                throw new RuntimeException("User not signed up for this class");
+            }
+
+            pilatisClass.getSignedUsers().remove(user);
+            user.setTickets(user.getTickets() + 1);
+            userRepository.save(user);
+            calendarRepository.save(pilatisClass);
+        } catch (Exception e) {
+            logger.severe("Failed to cancel class as user: " + e.getMessage());
+            throw e;
         }
-
-        pilatisClass.getSignedUsers().remove(user);
-        user.setTickets(user.getTickets() + 1);
-        userRepository.save(user);
-        calendarRepository.save(pilatisClass);
     }
 
 
-    public boolean cancelClassAsInstructor(Long classId) {
+    public void cancelClassAsInstructor(Long classId) {
         try{
             PilatisClass pilatisClass = calendarRepository.findById(classId)
                     .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -192,28 +237,33 @@ public class CalendarService {
             pilatisClass.getSignedUsers().clear();
             pilatisClass.setCanceled(true);
             calendarRepository.save(pilatisClass);
-            return true;
         } catch (Exception e) {
-            return false;
+            logger.severe("Failed to cancel class as instructor: " + e.getMessage());
+            throw e;
         }
     }
 
-    public boolean restoreClassAsInstructor(Long classId) {
+    public void restoreClassAsInstructor(Long classId) {
         try {
             PilatisClass pilatisClass = calendarRepository.findById(classId).orElseThrow();
             pilatisClass.setCanceled(false);
             calendarRepository.save(pilatisClass);
-            return true;
         } catch (Exception e) {
-            return false;
+            logger.severe("Failed to restore class as instructor: " + e.getMessage());
+            throw e;
         }
     }
 
 
     public List<String> getUserNamesForClass(Long classId) {
-        PilatisClass pilatisClass = calendarRepository.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
-        return pilatisClass.getSignedUsers().stream().map(User::getName).collect(Collectors.toList());
+        try {
+            PilatisClass pilatisClass = calendarRepository.findById(classId)
+                    .orElseThrow(() -> new RuntimeException("Class not found"));
+            return pilatisClass.getSignedUsers().stream().map(User::getName).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.severe("Failed to get user names for class: " + e.getMessage());
+            throw e;
+        }
     }
 
     public void sendMessageToClassClients(Long classId, String message) {
