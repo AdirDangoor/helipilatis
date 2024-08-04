@@ -20,28 +20,29 @@ public class CalendarController {
     @Autowired
     private CalendarService calendarService;
 
+    /**
+     * Handles GET request for all active classes
+     * used by user only on user view file
+     * @return List of all active classes
+     */
     @GetMapping("/classes")
     public List<PilatisClass> getAllActiveClasses() {
-        logger.info("[FUNCTION-CalendarController-getAllActiveClasses]");
-        return calendarService.getAllActiveClasses();
-    }
-
-    @PostMapping("/classes")
-    public PilatisClass createClass(@RequestBody PilatisClass pilatisClass) {
-        return calendarService.saveClass(pilatisClass);
-    }
-
-    @PutMapping("/classes/{id}")
-    public PilatisClass updateClass(@PathVariable Long id, @RequestBody PilatisClass pilatisClass) {
-        return calendarService.updateClass(id, pilatisClass);
-    }
-
-    @DeleteMapping("/classes/{id}")
-    public void deleteClass(@PathVariable Long id) {
-        calendarService.deleteClass(id);
+        try {
+            return calendarService.getAllActiveClasses();
+        } catch (Exception e) {
+            logger.severe("Error getting all active classes: " + e.getMessage());
+            return List.of();
+        }
     }
 
 
+    /**
+     * Handles POST request for signing up for a class
+     * used by user only on user view file
+     * @param classId the id of the class to sign up for
+     * @param userId the id of the user signing up
+     * @return ResponseEntity with status code and message
+     */
     @PostMapping("/classes/{classId}/signup")
     public ResponseEntity<String> signUpForClass(@PathVariable Long classId, @RequestParam Long userId) {
         logger.info("Signing up for class " + classId + " with user " + userId);
@@ -62,6 +63,13 @@ public class CalendarController {
         }
     }
 
+    /**
+     * Handles POST request for cancelling a class
+     * used by user only on user view file
+     * @param classId the id of the class to cancel
+     * @param userId the id of the user cancelling
+     * @return ResponseEntity with status code and message
+     */
     @PostMapping("/classes/{classId}/cancel")
     public ResponseEntity<String> cancelClass(@PathVariable Long classId, @RequestParam Long userId) {
         try {
@@ -72,24 +80,47 @@ public class CalendarController {
         }
     }
 
-    @PostMapping("/classes/{id}/message")
-    public void sendMessageToClassClients(@PathVariable Long id, @RequestBody String message) {
-        calendarService.sendMessageToClassClients(id, message);
-    }
 
+    /**
+     * Handles GET request for all classes of a user
+     * used by user only on user view file
+     * @param userId the id of the user to get classes for
+     * @return ResponseEntity with status code and list of classes
+     */
     @GetMapping("/user-classes/{userId}")
     public ResponseEntity<List<PilatisClass>> getUserClasses(@PathVariable Long userId) {
-        logger.info("[FUNCTION-CalendarController-getUserClasses]");
-        List<PilatisClass> userClasses = calendarService.getUserClasses(userId);
-        return ResponseEntity.ok(userClasses);
+        try {
+            List<PilatisClass> userClasses = calendarService.getUserClasses(userId);
+            return ResponseEntity.ok(userClasses);
+        } catch (Exception e) {
+            logger.severe("Error getting user classes: " + e.getMessage());
+            return ResponseEntity.status(500).body(List.of());
+        }
     }
 
+    /**
+     * Handles GET request for all classes by instructor
+     * it returns all classes including canceled ones
+     * used by instructor only on instructor view file
+     * @return ResponseEntity with status code and list of classes
+     */
     @GetMapping("/instructor/classes")
     public List<PilatisClass> instructorGetAllClasses() {
-        return calendarService.getAllClasses();
+        try {
+            return calendarService.getAllClasses();
+        } catch (Exception e) {
+            logger.severe("Error getting all classes: " + e.getMessage());
+            return List.of();
+        }
     }
 
 
+    /**
+     * Handles POST request for cancelling a class
+     * used by instructor only on instructor view file
+     * @param classId the id of the class to cancel
+     * @return ResponseEntity with status code and message
+     */
     @PostMapping("/instructor/classes/{classId}/cancel")
     public ResponseEntity<String> cancelClass(@PathVariable Long classId) {
         boolean success = calendarService.cancelClassAsInstructor(classId);
@@ -100,6 +131,12 @@ public class CalendarController {
         }
     }
 
+    /**
+     * Handles POST request for restoring a class
+     * used by instructor only on instructor view file
+     * @param classId the id of the class to restore
+     * @return ResponseEntity with status code and message
+     */
     @PostMapping("/instructor/classes/{classId}/restore")
     public ResponseEntity<String> restoreClass(@PathVariable Long classId) {
         boolean success = calendarService.restoreClassAsInstructor(classId);
@@ -110,6 +147,12 @@ public class CalendarController {
         }
     }
 
+    /**
+     * Handles GET request for getting all users signed up for a class
+     * used by instructor only on instructor view file
+     * @param classId the id of the class to get users for
+     * @return ResponseEntity with status code and list of user names
+     */
     @GetMapping("/instructor/{classId}/users")
     public ResponseEntity<List<String>> getUserNamesForClass(@PathVariable Long classId) {
         try {
@@ -120,4 +163,7 @@ public class CalendarController {
             return ResponseEntity.status(415).body(List.of("Unsupported content type"));
         }
     }
+
+
+
 }

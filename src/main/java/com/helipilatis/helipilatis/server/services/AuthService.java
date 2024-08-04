@@ -1,5 +1,4 @@
 package com.helipilatis.helipilatis.server.services;
-
 import com.helipilatis.helipilatis.server.ServerExceptions.LoginException;
 import com.helipilatis.helipilatis.server.ServerExceptions.RegistrationException;
 import com.helipilatis.helipilatis.databaseModels.Instructor;
@@ -11,9 +10,13 @@ import com.helipilatis.helipilatis.server.requests.LoginResponse;
 import com.helipilatis.helipilatis.server.requests.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
+
+/**
+ * Service for handling authentication, this file communicates with the database
+ * Contains methods for login and registration
+ */
 @Service
 public class AuthService {
 

@@ -20,6 +20,12 @@ public class AuthController {
     private AuthService authService;
     private static final Logger logger = Logger.getLogger("AuthController");
 
+    /**
+     * Handles POST request for login
+     * @param loginRequest the login request
+     * @param session the session
+     * @return ResponseEntity with status code and message
+     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
         logger.info("loginRequest : " + loginRequest);
@@ -35,6 +41,12 @@ public class AuthController {
         }
     }
 
+
+    /**
+     * Handles POST request for registration
+     * @param registerRequest the register request
+     * @return ResponseEntity with status code and message
+     */
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
         logger.info("registerRequest : " + registerRequest);

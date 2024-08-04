@@ -22,18 +22,31 @@ public class ShopController {
         this.shopService = shopService;
     }
 
+    /**
+     * Handles GET requests to retrieve all ticket types.
+     * @return a ResponseEntity containing a list of TicketType objects and an HTTP status code
+     */
     @GetMapping("/ticketTypes")
     public ResponseEntity<List<TicketType>> getAllTicketTypes() {
-        List<TicketType> ticketTypes = shopService.getAllTicketTypes();
-
-        return ResponseEntity.ok(ticketTypes);
+        try {
+            List<TicketType> ticketTypes = shopService.getAllTicketTypes();
+            return ResponseEntity.ok(ticketTypes);
+        } catch (Exception e) {
+            logger.warning("Error getting ticket types: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 
-
+    /**
+     * Handles POST requests to purchase a ticket.
+     * @param userId the ID of the user purchasing the ticket
+     * @param ticketTypeId the ID of the ticket type being purchased
+     * @return a ResponseEntity containing a success message and an HTTP status code
+     */
     @PostMapping("/purchaseTicket")
     public ResponseEntity<String> purchaseTicket(@RequestParam Long userId, @RequestParam Long ticketTypeId) {
         try {
-            // Call the service to process the ticket purchase
             shopService.purchaseTicket(userId, ticketTypeId);
             logger.info("Ticket purchased successfully. User ID: " + userId + ", Ticket Type ID: " + ticketTypeId);
             return ResponseEntity.ok("Ticket purchased successfully");
@@ -44,41 +57,4 @@ public class ShopController {
         }
     }
 }
-
-
-
-//get a request from front to purchase ticket
-
-
-//ask shop service for 1 ticket for client x
-
-//if get ticket then send the client 1 ticket
-//@RestController
-//@RequestMapping("/api/auth") //request mapping
-//public class AuthController {
-//
-//    @Autowired
-//    private AuthService authService;
-//    private static final Logger logger = Logger.getLogger(AuthController.class.getName());
-//
-//    @PostMapping("/login")
-//    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-//        // print for starting the function :
-//        logger.info("loginRequest : " + loginRequest);
-//        return ResponseEntity.ok("Login successful");
-//    }
-//
-//    @PostMapping("/register")
-//    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
-//
-//        // print for starting the function :
-//        logger.info("registerRequest : " + registerRequest);
-//
-//        boolean isRegistered = authService.register(registerRequest);
-//        if (isRegistered) {
-//            return ResponseEntity.ok("Register successful");
-//        } else {
-//            return ResponseEntity.status(400).body("Register failed");
-//        }
-//    }
 
