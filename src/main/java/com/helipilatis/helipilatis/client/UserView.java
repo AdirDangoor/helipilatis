@@ -5,6 +5,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -46,7 +47,6 @@ public class UserView extends BaseView {
         setSizeFull();
         setAlignItems(Alignment.STRETCH);
         setJustifyContentMode(JustifyContentMode.START);
-        setBackground();
         HorizontalLayout topFooter = createTopFooter();
         setMaxWidth("100%");
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
@@ -54,18 +54,37 @@ public class UserView extends BaseView {
         mainLayout.setWidthFull();
         mainLayout.setHeightFull(); // Set height to 100%
         mainLayout.add(topFooter);
+
         displaySchedule(mainLayout);
         add(mainLayout);
         refreshClassesContainer();
     }
 
-    private void setBackground() {
-        String imagePath = "images/shop_background.jpg";
-        getElement().getStyle()
-                .set("background-image", "url('" + imagePath + "')")
-                .set("background-size", "cover")
-                .set("background-position", "center");
+    private Span createTicketCountSpan() {
+        Long userId = getCurrentUserId();
+        int ticketCount = 0;
+        if (userId != null) {
+            try {
+                String url = "http://localhost:8080/api/user/tickets/" + userId;
+                ResponseEntity<Integer> response = restTemplate.getForEntity(url, Integer.class);
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    ticketCount = response.getBody();
+                } else {
+                    Notification.show("Error fetching ticket count", 3000, Notification.Position.MIDDLE);
+                }
+            } catch (Exception ex) {
+                logger.severe("Error fetching ticket count: " + ex.getMessage());
+                Notification.show("Error fetching ticket count", 3000, Notification.Position.MIDDLE);
+            }
+        }
+
+        Span ticketCountSpan = new Span("Tickets: " + ticketCount);
+        ticketCountSpan.getStyle()
+                .set("color", "white")
+                .set("font-weight", "bold");
+        return ticketCountSpan;
     }
+
 
     private List<PilatisClass> fetchPilatisClasses() {
         String url = "http://localhost:8080/api/calendar/classes"; // Replace with your actual API endpoint
@@ -162,6 +181,10 @@ public class UserView extends BaseView {
         dayClasses.getStyle().set("border-radius", "8px");
         dayClasses.getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.1)");
         dayClasses.getStyle().set("padding", "1em");
+        // Add ticket count span to the day classes layout
+        Span ticketCountSpan = createTicketCountSpan();
+        dayClasses.add(ticketCountSpan);
+
 
         Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
         grid.addColumn(pilatisClass -> {
@@ -294,7 +317,7 @@ public class UserView extends BaseView {
                 .set("background-color", "#007BFF")
                 .set("color", "white");
 
-        // Add buttons to the button layout
+
         buttonLayout.add(shopButton, myClassesButton);
 
         // Add logo and button layout to the top footer

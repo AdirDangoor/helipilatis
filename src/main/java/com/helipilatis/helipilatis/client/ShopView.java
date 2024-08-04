@@ -3,6 +3,7 @@ package com.helipilatis.helipilatis.client;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.helipilatis.helipilatis.databaseModels.TicketType;
 import com.vaadin.flow.router.Route;
@@ -20,6 +21,8 @@ import java.util.logging.Logger;
 @Route("shop")
 public class ShopView extends BaseView {
 
+        private Span ticketCountSpan;
+
         public ShopView(RestTemplate restTemplate) {
                 super();
                 this.restTemplate = restTemplate;
@@ -27,19 +30,27 @@ public class ShopView extends BaseView {
         }
 
         public void initializeView() {
-                // Set up the main layout
+                setupLayout();
+                addGlobalStyles();
+                Div contentContainer = createContentContainer();
+                addTitle(contentContainer);
+                addTicketCountSpan(contentContainer);
+                addTicketButtons(contentContainer);
+                add(contentContainer);
+        }
+
+        private void setupLayout() {
                 setSizeFull();
                 setAlignItems(Alignment.CENTER);
                 setJustifyContentMode(JustifyContentMode.CENTER);
-
-                // Set background image
                 String imagePath = "images/shop_background.jpg"; // Replace with your image path
                 getElement().getStyle()
                         .set("background-image", "url('" + imagePath + "')")
                         .set("background-size", "cover")
                         .set("background-position", "center");
+        }
 
-                // Add global styles
+        private void addGlobalStyles() {
                 Element styles = new Element("style");
                 styles.setText(
                         ".content-container {" +
@@ -78,28 +89,62 @@ public class ShopView extends BaseView {
                                 "}"
                 );
                 getElement().appendChild(styles);
+        }
 
-                // Create a container for content
+        private Div createContentContainer() {
                 Div contentContainer = new Div();
                 contentContainer.addClassName("content-container");
+                return contentContainer;
+        }
 
-                // Title
+        private void addTitle(Div contentContainer) {
                 H1 title = new H1("Welcome to Tickets Shop");
                 title.addClassName("shop-title");
-
-                // Add components to the container
                 contentContainer.add(title);
+        }
 
-                // Fetch and display ticket types
+        private void addTicketCountSpan(Div contentContainer) {
+                ticketCountSpan = createTicketCountSpan();
+                contentContainer.add(ticketCountSpan);
+        }
+
+        private void addTicketButtons(Div contentContainer) {
                 List<TicketType> ticketTypes = fetchTicketTypes();
                 for (TicketType ticketType : ticketTypes) {
                         Button ticketButton = new Button("Buy " + ticketType.getNumberOfTickets() + " (" + ticketType.getPrice() + "₪)", event -> purchaseTicket(ticketType.getId()));
                         ticketButton.getElement().getClassList().add("shop-button");
                         contentContainer.add(ticketButton);
                 }
+        }
 
-                // Add the container to the main layout
-                add(contentContainer);
+        private Span createTicketCountSpan() {
+                Long userId = getCurrentUserId();
+                int ticketCount = 0;
+                if (userId != null) {
+                        try {
+                                String url = "http://localhost:8080/api/user/tickets/" + userId;
+                                ResponseEntity<Integer> response = restTemplate.getForEntity(url, Integer.class);
+                                if (response.getStatusCode().is2xxSuccessful()) {
+                                        ticketCount = response.getBody();
+                                } else {
+                                        Notification.show("Error fetching ticket count", 3000, Notification.Position.MIDDLE);
+                                }
+                        } catch (Exception ex) {
+                                logger.severe("Error fetching ticket count: " + ex.getMessage());
+                                Notification.show("Error fetching ticket count", 3000, Notification.Position.MIDDLE);
+                        }
+                }
+
+                Span ticketCountSpan = new Span("Tickets: " + ticketCount);
+                ticketCountSpan.getStyle()
+                        .set("color", "black")
+                        .set("font-weight", "bold");
+                return ticketCountSpan;
+        }
+
+        private void refreshTicketCountSpan() {
+                Span newTicketCountSpan = createTicketCountSpan();
+                ticketCountSpan.setText(newTicketCountSpan.getText());
         }
 
         private List<TicketType> fetchTicketTypes() {
@@ -123,31 +168,20 @@ public class ShopView extends BaseView {
         }
 
         private void purchaseTicket(Long ticketTypeId) {
-                getCurrentUserId(userId -> {
-                        if (userId == null) {
-                                Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
-                                return;
-                        }
+                Long userId = getCurrentUserId();
+                if (userId == null) {
+                        Notification.show("User not logged in", 3000, Notification.Position.MIDDLE);
+                        return;
+                }
 
-                        ResponseEntity<String> response = apiRequests.purchaseTicket(userId, ticketTypeId);
-                        
-                        if (response.getStatusCode() == HttpStatus.OK) {
-                                Notification.show("Purchased ticket successfully");
-                        } else {
-                                Notification.show("Purchase failed", 3000, Notification.Position.MIDDLE);
-                        }
-                });
-        }
+                ResponseEntity<String> response = apiRequests.purchaseTicket(userId, ticketTypeId);
 
-        private void getCurrentUserId(Consumer<Long> callback) {
-                VaadinSession session = VaadinSession.getCurrent();
-                if (session != null) {
-                        Long userId = (Long) session.getAttribute("userId");
-                        logger.info("userId: " + userId);
-                        callback.accept(userId);
+                if (response.getStatusCode() == HttpStatus.OK) {
+                        Notification.show("Purchased ticket successfully");
+                        refreshTicketCountSpan(); // Refresh the ticket count span
                 } else {
-                        logger.severe("VaadinSession is null");
-                        callback.accept(null);
+                        Notification.show("Purchase failed", 3000, Notification.Position.MIDDLE);
                 }
         }
+
 }
