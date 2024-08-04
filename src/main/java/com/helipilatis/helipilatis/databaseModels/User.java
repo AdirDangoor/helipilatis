@@ -1,6 +1,8 @@
 package com.helipilatis.helipilatis.databaseModels;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -15,6 +17,9 @@ public class User {
     private int age;
     private String gender;
     private int tickets; //mention the number of tickets client owns
+
+    @Column(name = "inbox")
+    private String inbox;
 
     // Default constructor for JPA
     public User() {
@@ -82,5 +87,13 @@ public class User {
 
     public void setTickets(int tickets) {
         this.tickets = tickets;
+    }
+
+    public String getInbox() {
+        return inbox;
+    }
+
+    public void setInbox(String inbox) {
+        this.inbox = inbox;
     }
 }

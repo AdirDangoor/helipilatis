@@ -42,7 +42,7 @@ public class InstructorMessageView extends BaseView {
 
     private void sendMessageToAllUsers(String message) {
         try {
-            String url = "http://localhost:8080/api/instructor/send-message";
+            String url = "http://localhost:8080/api/mailbox/instructor/send-message-to-all";
             ResponseEntity<String> response = restTemplate.postForEntity(url, message, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {

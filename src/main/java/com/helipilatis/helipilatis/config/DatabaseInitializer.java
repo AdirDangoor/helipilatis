@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class DatabaseInitializer {
 
     // logger:
-    private static final java.util.logging.Logger logger = Logger.getLogger(AuthController.class.getName());
+    private static final java.util.logging.Logger logger = Logger.getLogger("DatabaseInitializer");
 
     @Autowired
     private DataSource dataSource;
@@ -32,7 +32,8 @@ public class DatabaseInitializer {
                     "name VARCHAR(255) NOT NULL, " +
                     "age INT NOT NULL, " +
                     "gender VARCHAR(50) NOT NULL, " +
-                    "tickets INT NOT NULL)");
+                    "tickets INT NOT NULL, " +
+                    "inbox VARCHAR(255))");
 
             // Create USER_SEQ sequence if it does not exist
             statement.execute("CREATE SEQUENCE IF NOT EXISTS USER_SEQ START WITH 1 INCREMENT BY 1");
@@ -66,10 +67,6 @@ public class DatabaseInitializer {
                     "FOREIGN KEY (class_id) REFERENCES calendar(id), " +
                     "FOREIGN KEY (user_id) REFERENCES users(id))");
 
-            // Create calendar_metadata table if it does not exist
-            statement.execute("CREATE TABLE IF NOT EXISTS calendar_metadata (" +
-                    "id BIGINT PRIMARY KEY, " +
-                    "last_initialization_date DATE NOT NULL)");
 
             // Check if the default instructor exists
             ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM instructors WHERE name = 'kaganov' AND phone = '0123456789'");
@@ -95,7 +92,7 @@ public class DatabaseInitializer {
                 statement.execute("INSERT INTO tickets (id, number_of_tickets, price) VALUES (NEXT VALUE FOR USER_SEQ, 10, 500)");
                 logger.info("Default ticket types added to the database");
             }
-            
+
 
             logger.info("Database initialized successfully");
 

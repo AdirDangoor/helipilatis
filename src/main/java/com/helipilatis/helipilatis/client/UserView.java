@@ -317,8 +317,13 @@ public class UserView extends BaseView {
                 .set("background-color", "#007BFF")
                 .set("color", "white");
 
+        // Add "Inbox" button
+        Button inboxButton = new Button("Inbox", event -> getUI().ifPresent(ui -> ui.navigate("inbox")));
+        inboxButton.getStyle()
+                .set("background-color", "#007BFF")
+                .set("color", "white");
 
-        buttonLayout.add(shopButton, myClassesButton);
+        buttonLayout.add(shopButton, myClassesButton, inboxButton);
 
         // Add logo and button layout to the top footer
         topFooter.add(logo, buttonLayout);

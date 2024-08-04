@@ -5,6 +5,8 @@ import com.helipilatis.helipilatis.databaseModels.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService extends BaseService {
 
@@ -22,4 +24,5 @@ public class UserService extends BaseService {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return user.getTickets();
     }
+
 }
