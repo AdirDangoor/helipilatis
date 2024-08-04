@@ -127,3 +127,6 @@ select tt1_0.id,tt1_0.name,tt1_0.price from tickets tt1_0 [42122-224]
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 	at java.base/java.lang.Thread.run(Thread.java:1570)
+2024-08-04 13:59:08.434778+03:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]TICKETS"; expected "TRUNCATE"; SQL statement:
+TICKETS [42001-224]
