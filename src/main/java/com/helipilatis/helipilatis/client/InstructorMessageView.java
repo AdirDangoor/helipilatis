@@ -35,14 +35,23 @@ public class InstructorMessageView extends BaseView {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        TextArea messageArea = new TextArea("Message");
+        TextArea messageArea = new TextArea("Please type your message here:");
         messageArea.setWidthFull();
         messageArea.setHeight("300px");
+        messageArea.getStyle()
+                .set("background-color", "rgba(255, 255, 255, 0.8)") // White transparent background
+                .set("border-radius", "8px") // Optional: rounded corners
+                .set("padding", "10px"); // Optional: padding inside the textarea
+
+        add(messageArea);
 
         Button sendButton = new Button("Send Message", event -> sendMessageToAllUsers(messageArea.getValue()));
         sendButton.getStyle()
                 .set("background-color", "#007BFF")
                 .set("color", "white");
+
+
+
 
         VerticalLayout layout = new VerticalLayout(messageArea, sendButton);
         layout.setWidth("50%");

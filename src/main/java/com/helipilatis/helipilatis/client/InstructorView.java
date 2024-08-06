@@ -323,9 +323,22 @@ public class InstructorView extends BaseView {
         topFooter.setWidthFull();
         topFooter.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         topFooter.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        // Logo image
         Image logo = new Image("images/logo.png", "Logo");
         logo.setHeight("50px");
+
+        // Styled button
         Button shopButton = new Button("Message Users", event -> getUI().ifPresent(ui -> ui.navigate("instructor-message")));
+        shopButton.getStyle()
+                .set("background-color", "#007BFF") // Blue background color
+                .set("color", "white") // White text color
+                .set("border", "none") // Remove border
+                .set("border-radius", "4px") // Optional: rounded corners
+                .set("padding", "10px 20px") // Optional: padding inside the button
+                .set("font-size", "16px") // Optional: font size
+                .set("cursor", "pointer"); // Optional: cursor pointer on hover
+
         topFooter.add(logo, shopButton);
         return topFooter;
     }
