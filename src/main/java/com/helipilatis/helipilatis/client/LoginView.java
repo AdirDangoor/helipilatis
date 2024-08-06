@@ -83,12 +83,14 @@ public class LoginView extends BaseView {
             if (loginResponse != null) {
                 Long userId = loginResponse.getUserId();
                 boolean isInstructor = loginResponse.isInstructor();
-                logger.info("userId: " + userId + ", isInstructor: " + isInstructor);
+                String userName = loginResponse.getUserName();
+                logger.info("userId: " + userId + ", isInstructor: " + isInstructor+ ", userName: " + userName);
 
                 VaadinSession session = VaadinSession.getCurrent();
                 if (session != null) {
                     session.setAttribute("userId", userId);
                     session.setAttribute("isInstructor", isInstructor);
+                    session.setAttribute("username", userName);
                 }
 
                 if (isInstructor) {
