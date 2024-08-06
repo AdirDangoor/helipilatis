@@ -999,3 +999,9 @@ DROP TABLE  USERS [90107-224]
 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 	at java.base/java.lang.Thread.run(Thread.java:1570)
+2024-08-06 17:56:28.325969+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (545)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-06 17:56:34.086185+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (277)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]

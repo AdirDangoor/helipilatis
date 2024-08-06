@@ -92,7 +92,7 @@ public class UserView extends BaseView {
 
         Span ticketCountSpan = new Span("Tickets: " + ticketCount);
         ticketCountSpan.getStyle()
-                .set("color", "white")
+                .set("color", "#003366")
                 .set("font-weight", "bold");
         return ticketCountSpan;
     }
@@ -189,7 +189,7 @@ public class UserView extends BaseView {
         dayClasses.setWidthFull();
         dayClasses.setHeightFull(); // Set height to 100%
 
-        dayClasses.getStyle().set("background-color", "black");
+        dayClasses.getStyle().set("background-color", "rgba(255, 255, 255, 0.8)");
         dayClasses.getStyle().set("border-radius", "8px");
         dayClasses.getStyle().set("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.1)");
         dayClasses.getStyle().set("padding", "1em");

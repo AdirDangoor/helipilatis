@@ -109,7 +109,7 @@ public class ShopView extends BaseView {
         }
 
         private void addTitle(Div contentContainer) {
-                H1 title = new H1("Welcome to Tickets Shop");
+                H1 title = new H1("Tickets Shop");
                 title.addClassName("shop-title");
                 contentContainer.add(title);
         }

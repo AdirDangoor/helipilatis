@@ -7,6 +7,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+
 import com.helipilatis.helipilatis.databaseModels.User;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
@@ -64,14 +69,51 @@ public class InboxView extends BaseView {
 
     private void displayInboxMessages(List<String> inboxMessages) {
         Collections.reverse(inboxMessages);
+
+        // Create a container for the inbox messages and set styles
+        Div inboxContainer = new Div();
+        inboxContainer.getStyle()
+                .set("width", "80%")
+                .set("max-width", "600px")
+                .set("margin", "0 auto") // Center the container horizontally
+                .set("padding", "20px")
+                .set("border-radius", "8px")
+                .set("background-color", "rgba(255, 255, 255, 0.8)")
+                .set("text-align", "center");
+
+        // Add the title
+        H1 title = new H1("Inbox");
+        title.getStyle()
+                .set("color", "#003366")
+                .set("font-size", "2em")
+                .set("text-align", "center")
+                .set("margin-bottom", "20px");
+        inboxContainer.add(title);
+
+        // Create a vertical layout for the messages
+        VerticalLayout messageLayout = new VerticalLayout();
+        messageLayout.getStyle()
+                .set("align-items", "center"); // Center items in the layout
+
+        // Add each message as a chat bubble in a separate row
         for (String message : inboxMessages) {
             Span messageSpan = new Span(message);
             messageSpan.getStyle()
-                    .set("background-color", "#f0f0f0")
+                    .set("background-color", "#3A8A8A") // Transparent blue background
                     .set("padding", "10px")
+                    .set("color","white")
                     .set("margin", "5px 0")
-                    .set("border-radius", "5px");
-            add(messageSpan);
+                    .set("border-radius", "15px") // Rounded corners for chat bubble effect
+                    .set("max-width", "100%") // Fit the width to the container
+                    .set("display", "block"); // Ensure it occupies the full width
+
+            messageLayout.add(messageSpan);
         }
+
+        inboxContainer.add(messageLayout);
+
+        // Add the container to the main view
+        add(inboxContainer);
     }
+
 }
