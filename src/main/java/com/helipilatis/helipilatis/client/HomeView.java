@@ -73,7 +73,7 @@ public class HomeView extends VerticalLayout {
         contentContainer.addClassName("content-container");
 
         // Title
-        H1 title = new H1("Welcome to Heli Pilatis!");
+        H1 title = new H1("Welcome to Heli Pilates!");
         title.addClassName("shop-title");
 
         // Buttons for navigation

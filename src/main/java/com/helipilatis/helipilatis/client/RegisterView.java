@@ -61,14 +61,17 @@ public class RegisterView extends BaseView {
                 .set("padding", "20px")
                 .set("border", "1px solid #ccc")
                 .set("border-radius", "5px")
-                .set("background-color", "white");
+                .set("background-color", "rgba(255, 255, 255, 0.8)"); // Semi-transparent white
 
         VerticalLayout formLayout = new VerticalLayout();
         formLayout.setWidth("100%");
         formLayout.setAlignItems(Alignment.STRETCH);
 
         H1 title = new H1("Register");
-        title.getStyle().set("text-align", "center");
+        title.getStyle()
+                .set("text-align", "center")
+                .set("color", "#003366") // Same color as shop-title
+                .set("font-size", "2em");
 
         formLayout.add(title, phone, name, age, genderComboBox, registerButton);
         regForm.add(formLayout);

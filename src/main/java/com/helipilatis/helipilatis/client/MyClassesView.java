@@ -68,16 +68,23 @@ public class MyClassesView extends BaseView {
     private void initializeContentBox() {
         contentBox = new Div();
         contentBox.getStyle()
-                .set("width", "600px")
-                .set("max-width", "100%")
-                .set("height", "100%") // Set height to 100%
                 .set("padding", "20px")
                 .set("border-radius", "8px")
-                .set("background-color", "rgba(173, 216, 230, 0.5)") // Transparent light blue
+                .set("background-color", "rgba(255, 255, 255, 0.8)")
                 .set("color", "black") // Text color for the box
-                .set("text-align", "center"); // Center text horizontally
+                .set("text-align", "center") // Center text horizontally
+                .set("width", "auto")  // Fit width to content
+                .set("max-width", "600px") // Maximum width constraint
+                .set("height", "auto") // Fit height to content
+                .set("display", "flex") // Make the box a flex container
+                .set("flex-direction", "column") // Stack children vertically
+                .set("align-items", "center") // Center items horizontally
+                .set("justify-content", "center") // Center items vertically
+                .set("box-sizing", "border-box"); // Include padding/border in width/height calculation
         add(contentBox);
     }
+
+
 
     private void displayUserClasses() {
         Long userId = getCurrentUserId();
@@ -100,8 +107,10 @@ public class MyClassesView extends BaseView {
     private void addHeader(String title) {
         H1 header = new H1(title);
         header.getStyle()
-                .set("color", "white") // Title color
-                .set("margin", "0"); // Remove default margin
+                .set("color", "#003366")
+                .set("text-align", "center")
+                .set("margin", "0")
+                .set("font-size", "2em");
         contentBox.add(header);
     }
 
@@ -109,12 +118,16 @@ public class MyClassesView extends BaseView {
         Div message = new Div();
         message.setText("You are not registered for any classes yet...");
         message.getStyle()
-                .set("color", "black")
-                .set("font-size", "20px")
+                .set("color", "#black")
+                .set("font-size", "1em")
                 .set("text-align", "center")
+                .set("width", "auto")
+                .set("height", "auto")
+                .set("align-items", "center")
                 .set("margin-top", "20px");
         contentBox.add(message);
     }
+
 
     private void displayClassesGrid(List<PilatisClass> userClasses) {
         Grid<PilatisClass> grid = new Grid<>(PilatisClass.class, false);
@@ -133,9 +146,8 @@ public class MyClassesView extends BaseView {
         // Wrap grid in a container div and adjust its size to fit the content
         Div gridContainer = new Div(grid);
         gridContainer.getStyle()
-                .set("width", "auto")
-                .set("max-width", "100%")
-                .set("height", "100%") // Set height to 100%
+                .set("width", "600px") // Fit width to container
+                .set("height", "auto") // Adjust height to fit content
                 .set("overflow-x", "auto") // Allow horizontal scroll if needed
                 .set("margin-top", "20px");
 

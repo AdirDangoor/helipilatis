@@ -53,10 +53,13 @@ public class LoginView extends BaseView {
                 .set("padding", "20px")
                 .set("border", "1px solid #ccc")
                 .set("border-radius", "5px")
-                .set("background-color", "white");
+                .set("background-color", "rgba(255, 255, 255, 0.8)"); // Semi-transparent white
 
         H1 title = new H1("Login");
-        title.getStyle().set("text-align", "center");
+        title.getStyle()
+                .set("text-align", "center")
+                .set("color", "#003366") // Same color as shop-title
+                .set("font-size", "2em");
 
         phone = new TextField("Phone Number");
         phone.setWidthFull();
