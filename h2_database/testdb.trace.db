@@ -1083,3 +1083,27 @@ update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [220
 2024-08-16 14:31:04.105639+03:00 jdbc[3]: exception
 org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (257)"; SQL statement:
 update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:23.589960+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:24.119378+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:24.759451+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:25.791531+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:25.969468+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:26.141208+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:26.461851+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:35:39.818424+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullaaa\\000aaaa a\\000aasdasd\\000aasdasdasd\\000a!!!\\000a?\\000abla bla blabla b... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
