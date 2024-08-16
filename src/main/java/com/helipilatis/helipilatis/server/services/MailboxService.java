@@ -2,6 +2,8 @@ package com.helipilatis.helipilatis.server.services;
 import com.helipilatis.helipilatis.databaseModels.User;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -27,7 +29,16 @@ public class MailboxService extends BaseService {
     public String getInboxMessages(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
-            return user.getInbox();
+            String inbox = user.getInbox();
+            if (inbox == null) {
+                return "";
+            }
+            String[] messages = inbox.split("\n");
+            List<String> messageList = new ArrayList<>(Arrays.asList(messages));
+            if (messageList.size() > 10) {
+                messageList = messageList.subList(messageList.size() - 10, messageList.size());
+            }
+            return String.join("\n", messageList);
         } else {
             return "";
         }

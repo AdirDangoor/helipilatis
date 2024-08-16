@@ -39,6 +39,11 @@ public class CalendarService extends BaseService {
         initializeCalendar();
     }
 
+    @Scheduled(cron = "0 0 * * * ?")
+    public void updateClassesHourly() {
+        removePastClassesForToday();
+    }
+
     /**
      * Initializes the calendar by adding classes for the next 4 weeks
      */
@@ -90,6 +95,24 @@ public class CalendarService extends BaseService {
             logger.severe("Failed to initialize calendar: " + e.getMessage());
         }
     }
+
+
+    private void removePastClassesForToday() {
+        try {
+            logger.info("Removing past classes for today");
+            LocalDate today = LocalDate.now();
+            LocalTime now = LocalTime.now();
+
+            List<PilatisClass> pastClasses = calendarRepository.findClassesByDateAndTimeBefore(today, now);
+            if (!pastClasses.isEmpty()) {
+                calendarRepository.deleteAll(pastClasses);
+                logger.info("Removed past classes for today: " + pastClasses.size());
+            }
+        } catch (Exception e) {
+            logger.severe("Failed to remove past classes for today: " + e.getMessage());
+        }
+    }
+
 
     /**
      * Fetches the default instructor ID
