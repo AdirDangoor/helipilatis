@@ -9,6 +9,7 @@
 ## RUN
 - Clone the repository
 - Open the project in your favorite IDE
+- Mark src directory as a source root
 - Run the file `HeliPilatisApplication.java` located in `src/main/java/com/helipilatis/helipilatis
 - Open your browser and navigate to `http://localhost:8080`
 
