@@ -15,7 +15,11 @@ public class MailboxService extends BaseService {
         logger.info("users: " + users);
         for (User user : users) {
             logger.info("Adding message to user: " + user.getId());
-            user.setInbox(user.getInbox() + message + "\n");
+            String inbox = user.getInbox();
+            if (inbox == null) {
+                inbox = "";
+            }
+            user.setInbox(inbox + message + "\n");
             userRepository.save(user);
         }
     }
