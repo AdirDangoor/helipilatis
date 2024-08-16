@@ -37,6 +37,8 @@ public class MailboxService extends BaseService {
             List<String> messageList = new ArrayList<>(Arrays.asList(messages));
             if (messageList.size() > 10) {
                 messageList = messageList.subList(messageList.size() - 10, messageList.size());
+                user.setInbox(String.join("\n", messageList));
+                userRepository.save(user);
             }
             return String.join("\n", messageList);
         } else {

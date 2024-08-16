@@ -1065,3 +1065,21 @@ DROP TABLE CALENDARCLASS_USERS [42102-224]
 2024-08-16 14:19:28.188009+03:00 jdbc[13]: exception
 org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "DROP [*]CLASS_USERS"; expected "TABLE, INDEX, USER, SEQUENCE, CONSTANT, TRIGGER, MATERIALIZED, VIEW, ROLE, ALIAS, SCHEMA, ALL OBJECTS, DOMAIN, TYPE, AGGREGATE, SYNONYM"; SQL statement:
 DROP CLASS_USERS [42001-224]
+2024-08-16 14:28:35.342810+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (264)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:28:37.597548+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (265)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:28:39.417811+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (266)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:30:10.681016+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (269)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:30:50.974825+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]
+2024-08-16 14:31:04.105639+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Value too long for column "INBOX CHARACTER VARYING(255)": "U&'nullok\\000aokasdasda\\000aokasdasda\\000aasd\\000atomorrow''s class is canceled\\... (257)"; SQL statement:
+update users set age=?,gender=?,inbox=?,name=?,phone=?,tickets=? where id=? [22001-224]

@@ -45,13 +45,17 @@ public class InstructorMessageView extends BaseView {
 
         add(messageArea);
 
-        Button sendButton = new Button("Send Message", event -> sendMessageToAllUsers(messageArea.getValue()));
+        Button sendButton = new Button("Send Message", event -> {
+            String message = messageArea.getValue();
+            if (message.length() > 25) {
+                Notification.show("Message cannot exceed 25 characters", 3000, Notification.Position.MIDDLE);
+            } else {
+                sendMessageToAllUsers(message);
+            }
+        });
         sendButton.getStyle()
                 .set("background-color", "#007BFF")
                 .set("color", "white");
-
-
-
 
         VerticalLayout layout = new VerticalLayout(messageArea, sendButton);
         layout.setWidth("50%");
