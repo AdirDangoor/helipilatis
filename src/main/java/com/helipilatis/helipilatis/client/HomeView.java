@@ -6,29 +6,30 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
-
+import com.vaadin.flow.component.notification.Notification;
 
 @Route("")
-public class HomeView extends VerticalLayout {
+public class HomeView extends BaseView {
 
     public HomeView() {
-        // Center the content
-        setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        // Title
-        add(new H1(""));
+        super();
+        try {
+            initializeLayout();
+            addStyles();
+            createContentContainer();
+        } catch (Exception ex) {
+            logger.severe("Error initializing HomeView: " + ex.getMessage());
+            Notification.show("Error initializing view", 3000, Notification.Position.MIDDLE);
+        }
+    }
 
-        // Set up the main layout
+    private void initializeLayout() {
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
-        // Set background image
-        String imagePath = "images/shop_background.jpg"; // Replace with your image path
-        getElement().getStyle()
-                .set("background-image", "url('" + imagePath + "')")
-                .set("background-size", "cover")
-                .set("background-position", "center");
+    }
 
+    private void addStyles() {
         Element styles = new Element("style");
         styles.setText(
                 ".content-container {" +
@@ -67,24 +68,19 @@ public class HomeView extends VerticalLayout {
                         "}"
         );
         getElement().appendChild(styles);
+    }
 
-        // Create a container for content
+    private void createContentContainer() {
         Div contentContainer = new Div();
         contentContainer.addClassName("content-container");
 
-        // Title
         H1 title = new H1("Welcome to Heli Pilates!");
         title.addClassName("shop-title");
 
-        // Buttons for navigation
         Button loginButton = new Button("Login", event -> getUI().ifPresent(ui -> ui.navigate("login")));
         Button registerButton = new Button("Register", event -> getUI().ifPresent(ui -> ui.navigate("register")));
 
-        add(loginButton, registerButton);
-
         contentContainer.add(title, loginButton, registerButton);
-
-        // Add the container to the main layout
         add(contentContainer);
     }
 }

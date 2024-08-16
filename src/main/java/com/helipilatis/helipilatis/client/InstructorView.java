@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -60,7 +61,6 @@ public class InstructorView extends BaseView {
         setSizeFull();
         setAlignItems(Alignment.STRETCH);
         setJustifyContentMode(JustifyContentMode.START);
-        setBackground();
         HorizontalLayout topFooter = createTopFooter();
         setMaxWidth("100%");
         setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
@@ -74,19 +74,18 @@ public class InstructorView extends BaseView {
 
     }
 
-    private void setBackground() {
-        String imagePath = "images/shop_background.jpg";
-        getElement().getStyle()
-                .set("background-image", "url('" + imagePath + "')")
-                .set("background-size", "cover")
-                .set("background-position", "center");
-    }
 
     private List<PilatisClass> fetchPilatisClasses() {
-        String url = "http://localhost:8080/api/calendar/instructor/classes";
-        ResponseEntity<PilatisClass[]> response = restTemplate.getForEntity(url, PilatisClass[].class);
-        logger.info("fetchPilatisClasses API response : " + Arrays.toString(response.getBody()));
-        return List.of(response.getBody());
+        try{
+            String url = "http://localhost:8080/api/calendar/instructor/classes";
+            ResponseEntity<PilatisClass[]> response = restTemplate.getForEntity(url, PilatisClass[].class);
+            logger.info("fetchPilatisClasses API response : " + Arrays.toString(response.getBody()));
+            return List.of(response.getBody());
+        } catch (Exception e) {
+            logger.severe("Error fetching pilatis classes: " + e.getMessage());
+            Notification.show("Error fetching pilatis classes", 3000, Notification.Position.MIDDLE);
+            return Collections.emptyList();
+        }
     }
 
 
@@ -167,10 +166,6 @@ public class InstructorView extends BaseView {
         }
     }
 
-    private void displayUserNamesForClass(Long classId) {
-       logger.info("Displaying user names for class " + classId);
-    }
-
     private VerticalLayout createDayClasses(List<PilatisClass> items) {
         VerticalLayout dayClasses = new VerticalLayout();
         dayClasses.setPadding(true);
@@ -240,10 +235,16 @@ public class InstructorView extends BaseView {
         return userNamesLayout;
     }
     private List<String> fetchUserNames(Long classId) {
-        String url = "http://localhost:8080/api/calendar/instructor/" + classId + "/users";
-        ResponseEntity<String[]> response = restTemplate.getForEntity(url, String[].class);
-        logger.info("fetchUserNames API response : " + Arrays.toString(response.getBody()));
-        return List.of(response.getBody());
+        try {
+            String url = "http://localhost:8080/api/calendar/instructor/" + classId + "/users";
+            ResponseEntity<String[]> response = restTemplate.getForEntity(url, String[].class);
+            logger.info("fetchUserNames API response : " + Arrays.toString(response.getBody()));
+            return List.of(response.getBody());
+        } catch (Exception e) {
+            logger.severe("Error fetching user names: " + e.getMessage());
+            Notification.show("Error fetching user names", 3000, Notification.Position.MIDDLE);
+            return Collections.emptyList();
+        }
     }
 
     private Button createBookButton(PilatisClass pilatisClass) {

@@ -25,7 +25,6 @@ public class LoginView extends BaseView {
         super();
         try {
             initializeLayout();
-            setBackgroundImage();
             createLoginForm();
         } catch (Exception ex) {
             logger.severe("Error initializing LoginView: " + ex.getMessage());
@@ -34,75 +33,82 @@ public class LoginView extends BaseView {
     }
 
     private void initializeLayout() {
-        setSizeFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        setAlignItems(Alignment.CENTER);
-    }
-
-    private void setBackgroundImage() {
-        String imagePath = "images/shop_background.jpg"; // Replace with your image path
-        getElement().getStyle()
-                .set("background-image", "url('" + imagePath + "')")
-                .set("background-size", "cover")
-                .set("background-position", "center");
+        try {
+            setSizeFull();
+            setJustifyContentMode(JustifyContentMode.CENTER);
+            setAlignItems(Alignment.CENTER);
+        } catch (Exception ex) {
+            logger.severe("Error in initializeLayout: " + ex.getMessage());
+            Notification.show("Error initializing layout", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void createLoginForm() {
-        Div loginForm = new Div();
-        loginForm.getStyle().set("width", "300px")
-                .set("padding", "20px")
-                .set("border", "1px solid #ccc")
-                .set("border-radius", "5px")
-                .set("background-color", "rgba(255, 255, 255, 0.8)"); // Semi-transparent white
+        try {
+            Div loginForm = new Div();
+            loginForm.getStyle().set("width", "300px")
+                    .set("padding", "20px")
+                    .set("border", "1px solid #ccc")
+                    .set("border-radius", "5px")
+                    .set("background-color", "rgba(255, 255, 255, 0.8)"); // Semi-transparent white
 
-        H1 title = new H1("Login");
-        title.getStyle()
-                .set("text-align", "center")
-                .set("color", "#003366") // Same color as shop-title
-                .set("font-size", "2em");
+            H1 title = new H1("Login");
+            title.getStyle()
+                    .set("text-align", "center")
+                    .set("color", "#003366") // Same color as shop-title
+                    .set("font-size", "2em");
 
-        phone = new TextField("Phone Number");
-        phone.setWidthFull();
+            phone = new TextField("Phone Number");
+            phone.setWidthFull();
 
-        loginButton = new Button("Login");
-        loginButton.setWidthFull();
+            loginButton = new Button("Login");
+            loginButton.setWidthFull();
 
-        loginForm.add(title, phone, loginButton);
-        add(loginForm);
+            loginForm.add(title, phone, loginButton);
+            add(loginForm);
 
-        loginButton.addClickListener(event -> handleLoginButtonClick());
+            loginButton.addClickListener(event -> handleLoginButtonClick());
+        } catch (Exception ex) {
+            logger.severe("Error in createLoginForm: " + ex.getMessage());
+            Notification.show("Error creating login form", 3000, Notification.Position.MIDDLE);
+        }
     }
 
     private void handleLoginButtonClick() {
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setPhone(phone.getValue());
+        try {
+            LoginRequest loginRequest = new LoginRequest();
+            loginRequest.setPhone(phone.getValue());
 
-        ResponseEntity<LoginResponse> response = apiRequests.login(loginRequest);
-        if (response.getStatusCode() == HttpStatus.OK) {
-            LoginResponse loginResponse = response.getBody();
-            if (loginResponse != null) {
-                Long userId = loginResponse.getUserId();
-                boolean isInstructor = loginResponse.isInstructor();
-                String userName = loginResponse.getUserName();
-                logger.info("userId: " + userId + ", isInstructor: " + isInstructor+ ", userName: " + userName);
+            ResponseEntity<LoginResponse> response = apiRequests.login(loginRequest);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                LoginResponse loginResponse = response.getBody();
+                if (loginResponse != null) {
+                    Long userId = loginResponse.getUserId();
+                    boolean isInstructor = loginResponse.isInstructor();
+                    String userName = loginResponse.getUserName();
+                    logger.info("userId: " + userId + ", isInstructor: " + isInstructor + ", userName: " + userName);
 
-                VaadinSession session = VaadinSession.getCurrent();
-                if (session != null) {
-                    session.setAttribute("userId", userId);
-                    session.setAttribute("isInstructor", isInstructor);
-                    session.setAttribute("username", userName);
+                    VaadinSession session = VaadinSession.getCurrent();
+                    if (session != null) {
+                        session.setAttribute("userId", userId);
+                        session.setAttribute("isInstructor", isInstructor);
+                        session.setAttribute("username", userName);
+                    }
+
+                    if (isInstructor) {
+                        Notification.show("Login successful - Instructor", 3000, Notification.Position.MIDDLE);
+                        getUI().ifPresent(ui -> ui.navigate("instructor"));
+                    } else {
+                        Notification.show("Login successful - User", 3000, Notification.Position.MIDDLE);
+                        getUI().ifPresent(ui -> ui.navigate("user"));
+                    }
                 }
-
-                if (isInstructor) {
-                    Notification.show("Login successful - Instructor", 3000, Notification.Position.MIDDLE);
-                    getUI().ifPresent(ui -> ui.navigate("instructor"));
-                } else {
-                    Notification.show("Login successful - User", 3000, Notification.Position.MIDDLE);
-                    getUI().ifPresent(ui -> ui.navigate("user"));
-                }
+            } else {
+                Notification.show("Authentication failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
             }
-        } else {
-            Notification.show("Authentication failed: " + response.getBody(), 3000, Notification.Position.MIDDLE);
+        } catch (Exception ex) {
+            logger.severe("Error in handleLoginButtonClick: " + ex.getMessage());
+            Notification.show("Error during login", 3000, Notification.Position.MIDDLE);
         }
     }
 }

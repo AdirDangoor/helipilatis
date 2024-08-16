@@ -99,12 +99,18 @@ public class UserView extends BaseView {
 
 
     private List<PilatisClass> fetchPilatisClasses() {
-        String url = "http://localhost:8080/api/calendar/classes"; // Replace with your actual API endpoint
+        try {
+            String url = "http://localhost:8080/api/calendar/classes"; // Replace with your actual API endpoint
 
-        ResponseEntity<PilatisClass[]> response = restTemplate.getForEntity(url, PilatisClass[].class);
-        // Print response
-        logger.info("fetchPilatisClasses API response : " + Arrays.toString(response.getBody()));
-        return List.of(response.getBody());
+            ResponseEntity<PilatisClass[]> response = restTemplate.getForEntity(url, PilatisClass[].class);
+            // Print response
+            logger.info("fetchPilatisClasses API response : " + Arrays.toString(response.getBody()));
+            return List.of(response.getBody());
+        } catch (Exception ex) {
+            logger.severe("Error fetching Pilatis classes: " + ex.getMessage());
+            Notification.show("Error fetching Pilatis classes", 3000, Notification.Position.MIDDLE);
+            return List.of();
+        }
     }
 
     private Map<LocalDate, List<PilatisClass>> groupByDate(List<PilatisClass> pilatisClasses) {
